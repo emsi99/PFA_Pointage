@@ -117,6 +117,62 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* ─── Variables thème PointApp ─────────────────────────────────── */
+
+[data-theme="light"] {
+  --pt-sidebar-bg: #0f2a52;
+  --pt-sidebar-text: rgba(255, 255, 255, 0.6);
+  --pt-sidebar-active: rgba(46, 117, 182, 0.22);
+  --pt-page-bg: #f0f4f8;
+  --pt-card-bg: #ffffff;
+  --pt-card-border: #e2e8f0;
+  --pt-text-primary: #0f2a52;
+  --pt-text-secondary: #64748b;
+  --pt-accent: #2e75b6;
+  --pt-accent-hover: #1d5fa0;
+  --pt-muted: #f8fafc;
+
+  /* Aliases courts */
+  --page-bg: #f0f4f8;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --text-primary: #0f2a52;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --accent: #2e75b6;
+  --table-header: #f8fafc;
+  --divider: #f1f5f9;
+  --sidebar-bg: #0f2a52;
+}
+
+[data-theme="dark-navy"] {
+  --pt-sidebar-bg: #0f2a52;
+  --pt-sidebar-text: rgba(255, 255, 255, 0.5);
+  --pt-sidebar-active: rgba(46, 117, 182, 0.3);
+  --pt-page-bg: #0a1628;
+  --pt-card-bg: #0f2347;
+  --pt-card-border: rgba(255, 255, 255, 0.07);
+  --pt-text-primary: #f0f6ff;
+  --pt-text-secondary: rgba(255, 255, 255, 0.5);
+  --pt-accent: #3b82f6;
+  --pt-accent-hover: #2563eb;
+  --pt-muted: rgba(255, 255, 255, 0.04);
+
+  /* Aliases courts */
+  --page-bg: #0a1628;
+  --card-bg: #0f2347;
+  --card-border: rgba(255, 255, 255, 0.07);
+  --text-primary: #f0f6ff;
+  --text-secondary: rgba(255, 255, 255, 0.5);
+  --text-muted: rgba(255, 255, 255, 0.3);
+  --accent: #3b82f6;
+  --table-header: #0c1d3a;
+  --divider: rgba(255, 255, 255, 0.06);
+  --sidebar-bg: #0f2a52;
+}
+
+/* ─── Base ─────────────────────────────────────────────────────── */
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

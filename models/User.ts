@@ -6,11 +6,14 @@ export interface IUser extends Document {
   email: string
   password: string
   role: 'admin' | 'employe'
+  statut: 'actif' | 'inactif'
   matricule?: string
   poste?: string
   departement?: string
   soldeConges: number
   telephone?: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 const UserSchema = new Schema<IUser>({
@@ -19,6 +22,7 @@ const UserSchema = new Schema<IUser>({
   email:       { type: String, required: true, unique: true },
   password:    { type: String, required: true },
   role:        { type: String, enum: ['admin', 'employe'], default: 'employe' },
+  statut:      { type: String, enum: ['actif', 'inactif'], default: 'actif' },
   matricule:   { type: String },
   poste:       { type: String },
   departement: { type: String },

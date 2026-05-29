@@ -6,11 +6,24 @@ if (!MONGODB_URI) {
   throw new Error('MONGODB_URI manquant dans .env.local')
 }
 
-let cached = (global as any).mongoose || { conn: null, promise: null }
+interface CacheMongoose {
+  conn: typeof mongoose | null
+  promise: Promise<typeof mongoose> | null
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var _mongoose: CacheMongoose | undefined
+}
+
+const cache: CacheMongoose = global._mongoose ?? { conn: null, promise: null }
+global._mongoose = cache
 
 export async function connectDB() {
-  if (cached.conn) return cached.conn
-  cached.promise = mongoose.connect(MONGODB_URI)
-  cached.conn = await cached.promise
-  return cached.conn
+  if (cache.conn) return cache.conn
+  if (!cache.promise) {
+    cache.promise = mongoose.connect(MONGODB_URI)
+  }
+  cache.conn = await cache.promise
+  return cache.conn
 }
