@@ -1,5 +1,13 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Conception
+
+### Diagramme de Classe
+![Diagramme de Classe](conception/class.png)
+
+### Diagramme de Cas d'Utilisation
+![Diagramme de Cas d'Utilisation](conception/usecase.png)
+
 ## Getting Started
 
 First, run the development server:
