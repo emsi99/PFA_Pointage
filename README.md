@@ -3,10 +3,10 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 ## Conception
 
 ### Diagramme de Classe
-![Diagramme de Classe](conception/class.png)
+<img src="conception/class.png" alt="Diagramme de Classe" width="500">
 
 ### Diagramme de Cas d'Utilisation
-![Diagramme de Cas d'Utilisation](conception/usecase.png)
+<img src="conception/usecase.png" alt="Diagramme de Cas d'Utilisation" width="500">
 
 ## Getting Started
 
