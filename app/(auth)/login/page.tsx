@@ -2,186 +2,174 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  Fingerprint, ShieldCheck, Lock, Mail,
-  Eye, EyeOff, ArrowRight, AlertCircle, Loader2,
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Mail, Eye, EyeOff, ArrowRight, AlertCircle, Loader2, Lock } from 'lucide-react'
+import Logo from '@/components/Logo'
 
 export default function PageLogin() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  const [erreur, setErreur] = useState('')
+  const [chargement, setChargement] = useState(false)
+  const [voirMdp, setVoirMdp] = useState(false)
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const seConnecter = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    setError('')
-
+    setChargement(true)
+    setErreur('')
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
-
       const data = await res.json()
-
-      if (!data.success) {
-        setError(data.message)
-        return
-      }
-
-      // Le token est dans le cookie httpOnly — pas de localStorage
-      // On utilise seulement le rôle retourné dans le body pour rediriger
-      const { utilisateur } = data
-
-      if (utilisateur.role === 'admin') {
-        router.push('/admin/dashboard')
-      } else {
-        router.push('/employe/pointage')
-      }
+      if (!data.success) { setErreur(data.message); return }
+      if (data.utilisateur.role === 'admin') router.push('/admin/dashboard')
+      else router.push('/employe/pointage')
     } catch {
-      setError('Erreur de connexion au serveur')
+      setErreur('Erreur de connexion au serveur')
     } finally {
-      setLoading(false)
+      setChargement(false)
     }
   }
 
-  return (
-    <div className="bg-[#0a1f3d] relative overflow-hidden min-h-screen flex flex-col items-center justify-center">
-      {/* Halo bas-gauche */}
-      <div
-        className="absolute bottom-[-120px] left-[-100px] w-[500px] h-[500px] rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(46,117,182,0.35) 0%, transparent 70%)' }}
-      />
-      {/* Halo haut-droit */}
-      <div
-        className="absolute top-[-60px] right-[-40px] w-[300px] h-[300px] rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(46,117,182,0.18) 0%, transparent 70%)' }}
-      />
-      {/* Grille de points */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)',
-          backgroundSize: '28px 28px',
-        }}
-      />
+  const inputCls = `
+    w-full h-11 text-sm rounded-xl border px-10
+    focus:outline-none focus:ring-2 focus:ring-[#2563eb]/40
+    transition-colors
+  `
 
-      <div className="relative z-10 w-full max-w-[400px] mx-auto px-4">
-        {/* Barre du haut */}
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-2">
-            <div className="bg-[#2e75b6] rounded-lg w-8 h-8 flex items-center justify-center shrink-0">
-              <Fingerprint size={16} className="text-white" />
+  return (
+    <div
+      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
+      style={{ backgroundColor: '#0a0e16' }}
+    >
+      {/* Halo bas-gauche */}
+      <div className="absolute bottom-[-140px] left-[-120px] w-[520px] h-[520px] rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.28) 0%, transparent 70%)' }} />
+      {/* Halo haut-droit */}
+      <div className="absolute top-[-80px] right-[-60px] w-[360px] h-[360px] rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)' }} />
+      {/* Grille de points */}
+      <div className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)',
+          backgroundSize: '28px 28px',
+        }} />
+
+      <div className="relative z-10 w-full max-w-[400px] px-4">
+        {/* Card */}
+        <div className="rounded-[18px] overflow-hidden shadow-2xl"
+          style={{ backgroundColor: '#ffffff', border: '1px solid rgba(255,255,255,0.08)' }}>
+
+          {/* Header card */}
+          <div className="px-8 pt-8 pb-6 border-b border-gray-100">
+            <div className="flex justify-center mb-5">
+              <Logo />
             </div>
-            <span className="text-white text-sm font-medium">PointApp</span>
+            <h1 className="text-[17px] font-semibold text-[#0f1729] text-center leading-snug">
+              Bon retour 👋
+            </h1>
+            <p className="text-sm text-[#64748b] text-center mt-1">
+              Connectez-vous à votre espace
+            </p>
           </div>
-          <div className="flex items-center gap-1.5">
-            <ShieldCheck size={13} className="text-white/40" />
-            <span className="text-white/40 text-xs">Connexion sécurisée</span>
+
+          {/* Formulaire */}
+          <form onSubmit={seConnecter} className="px-8 py-6 space-y-4">
+            {erreur && (
+              <div className="flex items-center gap-2 px-3.5 py-3 rounded-xl text-sm bg-red-50 text-red-600 border border-red-100">
+                <AlertCircle size={14} strokeWidth={2} className="shrink-0" />
+                {erreur}
+              </div>
+            )}
+
+            {/* Email */}
+            <div>
+              <label className="block text-xs font-medium text-[#0f1729] mb-1.5">Email</label>
+              <div className="relative">
+                <Mail size={14} strokeWidth={2} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <input
+                  type="email"
+                  placeholder="votre@email.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  className={inputCls}
+                  style={{
+                    backgroundColor: '#f8fafc',
+                    borderColor: '#e2e8f0',
+                    color: '#0f1729',
+                    paddingLeft: '2.5rem',
+                    paddingRight: '1rem',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Mot de passe */}
+            <div>
+              <label className="block text-xs font-medium text-[#0f1729] mb-1.5">Mot de passe</label>
+              <div className="relative">
+                <Lock size={14} strokeWidth={2} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <input
+                  type={voirMdp ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  className={inputCls}
+                  style={{
+                    backgroundColor: '#f8fafc',
+                    borderColor: '#e2e8f0',
+                    color: '#0f1729',
+                    paddingLeft: '2.5rem',
+                    paddingRight: '2.5rem',
+                  }}
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setVoirMdp(v => !v)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  {voirMdp ? <EyeOff size={14} strokeWidth={2} /> : <Eye size={14} strokeWidth={2} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="text-right -mt-1">
+              <a href="#" className="text-xs text-[#2563eb] hover:underline underline-offset-2">
+                Mot de passe oublié ?
+              </a>
+            </div>
+
+            <button
+              type="submit"
+              disabled={chargement}
+              className="w-full h-11 rounded-xl text-white text-sm font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-60"
+              style={{ backgroundColor: chargement ? '#1d4ed8' : '#2563eb' }}
+              onMouseEnter={e => { if (!chargement) e.currentTarget.style.backgroundColor = '#1d4ed8' }}
+              onMouseLeave={e => { if (!chargement) e.currentTarget.style.backgroundColor = '#2563eb' }}
+            >
+              {chargement
+                ? <><Loader2 size={15} strokeWidth={2} className="animate-spin" /> Connexion…</>
+                : <>Se connecter <ArrowRight size={14} strokeWidth={2} /></>
+              }
+            </button>
+          </form>
+
+          {/* Footer card */}
+          <div className="px-8 py-4 border-t border-gray-100 flex items-center justify-center gap-1.5">
+            <Lock size={11} strokeWidth={2} className="text-slate-400" />
+            <span className="text-[11px] text-slate-400">
+              Accès réservé au personnel autorisé
+            </span>
           </div>
         </div>
 
-        <Card className={cn('rounded-2xl border border-slate-200 bg-white shadow-2xl gap-0 py-0 ring-0')}>
-          <CardHeader className="bg-[#0f2a52] rounded-t-2xl px-7 py-6">
-            <div className="flex justify-between items-start gap-4">
-              <div>
-                <p className="text-white text-lg font-medium leading-snug">Bonjour, bon retour.</p>
-                <p className="text-white/45 text-xs mt-1.5 leading-relaxed">
-                  Identifiez-vous pour accéder à votre espace
-                </p>
-              </div>
-              <div className="bg-white/[0.08] rounded-lg p-2 shrink-0 mt-0.5">
-                <Lock size={16} className="text-white/60" />
-              </div>
-            </div>
-          </CardHeader>
-
-          <form onSubmit={handleLogin}>
-            <CardContent className="px-7 py-5 space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle size={14} />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">Email</label>
-                <div className="relative">
-                  <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                  <Input
-                    type="email"
-                    placeholder="votre@email.com"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    required
-                    className="pl-9 h-10"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">Mot de passe</label>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    required
-                    className="pr-10 h-10"
-                  />
-                  <button
-                    type="button"
-                    tabIndex={-1}
-                    onClick={() => setShowPassword(s => !s)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                  >
-                    {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="text-right">
-                <a href="#" className="text-[#2e75b6] text-xs hover:underline underline-offset-2">
-                  Mot de passe oublié ?
-                </a>
-              </div>
-
-              <Button
-                type="submit"
-                size="lg"
-                disabled={loading}
-                className="w-full h-10 bg-[#2e75b6] hover:bg-[#1d5fa0] text-white border-transparent transition-colors duration-150"
-              >
-                {loading ? (
-                  <><Loader2 size={14} className="animate-spin" />Connexion en cours...</>
-                ) : (
-                  <>Se connecter<ArrowRight size={14} /></>
-                )}
-              </Button>
-            </CardContent>
-          </form>
-
-          <CardFooter className="px-7 py-3 justify-center bg-transparent border-t border-slate-100">
-            <Lock size={11} className="text-slate-400 shrink-0" />
-            <span className="text-slate-400 text-xs ml-1.5">
-              Accès réservé au personnel autorisé · Entreprise XYZ
-            </span>
-          </CardFooter>
-        </Card>
-
-        <p className="text-white/30 text-xs text-center mt-4">
+        <p className="text-center mt-4 text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
           Problème de connexion ? Contactez votre administrateur RH
         </p>
       </div>

@@ -1,95 +1,90 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
-  Users, Clock, Calendar, AlertTriangle, FileText,
-  QrCode, Settings, LogOut, LayoutDashboard, Sun, Moon,
+  LayoutDashboard, Users, Clock, Calendar,
+  AlertTriangle, FileText, QrCode, Settings, LogOut,
 } from 'lucide-react'
-import { useTheme } from '@/lib/theme-context'
+import Logo from '@/components/Logo'
+import ThemeToggle from '@/components/ThemeToggle'
 import { logout } from '@/lib/auth-client'
 import { cn } from '@/lib/utils'
 
 const itemsNav = [
   { label: 'Dashboard',  href: '/admin/dashboard',  icone: LayoutDashboard },
-  { label: 'Employés',   href: '/admin/employes',   icone: Users },
-  { label: 'Pointages',  href: '/admin/pointages',  icone: Clock },
-  { label: 'Congés',     href: '/admin/conges',     icone: Calendar },
-  { label: 'Anomalies',  href: '/admin/anomalies',  icone: AlertTriangle },
-  { label: 'Rapports',   href: '/admin/rapports',   icone: FileText },
-  { label: 'QR Code',    href: '/admin/qrcode',     icone: QrCode },
-  { label: 'Paramètres', href: '/admin/parametres', icone: Settings },
+  { label: 'Employés',   href: '/admin/employes',   icone: Users           },
+  { label: 'Pointages',  href: '/admin/pointages',  icone: Clock           },
+  { label: 'Congés',     href: '/admin/conges',     icone: Calendar        },
+  { label: 'Anomalies',  href: '/admin/anomalies',  icone: AlertTriangle   },
+  { label: 'Rapports',   href: '/admin/rapports',   icone: FileText        },
+  { label: 'QR Code',    href: '/admin/qrcode',     icone: QrCode          },
+  { label: 'Paramètres', href: '/admin/parametres', icone: Settings        },
 ]
 
 interface Props {
-  activePath: string
   nomUtilisateur?: string
 }
 
-export default function AdminSidebar({ activePath, nomUtilisateur }: Props) {
-  const router = useRouter()
-  const { theme, toggleTheme } = useTheme()
+export default function AdminSidebar({ nomUtilisateur }: Props) {
+  const pathname = usePathname()
 
   const deconnecter = async () => {
     await logout()
-    router.push('/login')
+    window.location.replace('/login')
   }
+
+  const initiale = nomUtilisateur?.[0]?.toUpperCase() ?? 'A'
 
   return (
     <aside
-      className="w-64 flex flex-col fixed h-full z-10 transition-colors duration-300"
-      style={{ backgroundColor: 'var(--pt-sidebar-bg)' }}
+      className="w-64 flex flex-col fixed h-full z-10 border-r"
+      style={{
+        backgroundColor: 'var(--pp-sidebar-bg)',
+        borderColor: 'var(--pp-sidebar-border)',
+      }}
     >
       {/* Logo */}
       <div
-        className="p-6 border-b"
-        style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+        className="px-5 py-5 border-b"
+        style={{ borderColor: 'var(--pp-sidebar-border)' }}
       >
-        <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-            style={{ backgroundColor: 'var(--pt-accent)' }}
-          >
-            <span className="text-white font-bold text-sm">P</span>
-          </div>
-          <span className="text-white font-bold text-lg">PointApp</span>
-        </div>
-        {nomUtilisateur && (
-          <p className="text-xs mt-2 truncate" style={{ color: 'var(--pt-sidebar-text)' }}>
-            {nomUtilisateur}
-          </p>
-        )}
+        <Logo />
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        <p
+          className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-widest"
+          style={{ color: 'var(--pp-text-muted)' }}
+        >
+          Menu
+        </p>
         {itemsNav.map(item => {
-          const actif = activePath === item.href
+          const actif = pathname === item.href || pathname.startsWith(item.href + '/')
           return (
             <a
               key={item.href}
               href={item.href}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
-                actif ? 'text-white font-medium' : 'hover:text-white'
-              )}
+              className={cn('relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm')}
               style={{
-                backgroundColor: actif ? 'var(--pt-accent)' : 'transparent',
-                color: actif ? '#fff' : 'var(--pt-sidebar-text)',
+                backgroundColor: actif ? 'var(--pp-nav-active-bg)' : 'transparent',
+                color: actif ? 'var(--pp-nav-active-fg)' : 'var(--pp-nav-fg)',
+                fontWeight: actif ? 500 : 400,
               }}
               onMouseEnter={e => {
-                if (!actif) {
-                  e.currentTarget.style.backgroundColor = 'var(--pt-sidebar-active)'
-                  e.currentTarget.style.color = '#fff'
-                }
+                if (!actif) e.currentTarget.style.backgroundColor = 'var(--pp-nav-hover-bg)'
               }}
               onMouseLeave={e => {
-                if (!actif) {
-                  e.currentTarget.style.backgroundColor = 'transparent'
-                  e.currentTarget.style.color = 'var(--pt-sidebar-text)'
-                }
+                if (!actif) e.currentTarget.style.backgroundColor = 'transparent'
               }}
             >
-              <item.icone size={17} />
+              {actif && (
+                <div
+                  className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r-full"
+                  style={{ backgroundColor: 'var(--pp-accent)' }}
+                />
+              )}
+              <item.icone size={16} strokeWidth={2} />
               {item.label}
             </a>
           )
@@ -98,42 +93,40 @@ export default function AdminSidebar({ activePath, nomUtilisateur }: Props) {
 
       {/* Bas de sidebar */}
       <div
-        className="p-4 border-t space-y-1"
-        style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+        className="px-3 py-4 border-t space-y-1"
+        style={{ borderColor: 'var(--pp-sidebar-border)' }}
       >
-        {/* Toggle thème */}
-        <button
-          onClick={toggleTheme}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full transition-colors"
-          style={{ color: 'var(--pt-sidebar-text)' }}
-          onMouseEnter={e => {
-            e.currentTarget.style.backgroundColor = 'var(--pt-sidebar-active)'
-            e.currentTarget.style.color = '#fff'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.backgroundColor = 'transparent'
-            e.currentTarget.style.color = 'var(--pt-sidebar-text)'
-          }}
-        >
-          {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
-          {theme === 'light' ? 'Mode sombre' : 'Mode clair'}
-        </button>
+        {/* Avatar utilisateur */}
+        <div className="flex items-center gap-3 px-3 py-2 mb-1">
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+            style={{ backgroundColor: 'var(--pp-accent)' }}
+          >
+            {initiale}
+          </div>
+          <div className="min-w-0">
+            <p
+              className="text-sm font-medium truncate"
+              style={{ color: 'var(--pp-text-primary)' }}
+            >
+              {nomUtilisateur ?? 'Admin'}
+            </p>
+            <p className="text-xs" style={{ color: 'var(--pp-text-muted)' }}>
+              Administrateur
+            </p>
+          </div>
+        </div>
 
-        {/* Déconnexion */}
+        <ThemeToggle />
+
         <button
           onClick={deconnecter}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full transition-colors"
-          style={{ color: 'var(--pt-sidebar-text)' }}
-          onMouseEnter={e => {
-            e.currentTarget.style.backgroundColor = 'var(--pt-sidebar-active)'
-            e.currentTarget.style.color = '#fff'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.backgroundColor = 'transparent'
-            e.currentTarget.style.color = 'var(--pt-sidebar-text)'
-          }}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full text-left"
+          style={{ color: 'var(--pp-nav-fg)' }}
+          onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--pp-nav-hover-bg)' }}
+          onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
         >
-          <LogOut size={17} />
+          <LogOut size={16} strokeWidth={2} />
           Déconnexion
         </button>
       </div>

@@ -117,7 +117,61 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-/* ─── Variables thème PointApp ─────────────────────────────────── */
+/* ─── Tokens Pointage Pro ───────────────────────────────────────── */
+
+:root {
+  --pp-blue: #2563eb;
+  --pp-blue-hover: #1d4ed8;
+  --pp-blue-bright: #3b82f6;
+  --pp-c-green: #16a34a;
+  --pp-c-amber: #f59e0b;
+  --pp-c-red: #ef4444;
+  --pp-c-purple: #8b5cf6;
+  --pp-c-orange: #f97316;
+  --pp-c-indigo: #6366f1;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --shadow-fab: 0 8px 22px rgba(37, 99, 235, 0.4);
+}
+
+[data-theme="light"], :root {
+  --pp-page-bg: #f5f7fa;
+  --pp-sidebar-bg: #ffffff;
+  --pp-sidebar-border: #eef1f5;
+  --pp-card-bg: #ffffff;
+  --pp-card-border: #e8ecf1;
+  --pp-text-primary: #0f1729;
+  --pp-text-secondary: #64748b;
+  --pp-text-muted: #94a3b8;
+  --pp-accent: #2563eb;
+  --pp-accent-hover: #1d4ed8;
+  --pp-nav-active-bg: #eff4ff;
+  --pp-nav-active-fg: #2563eb;
+  --pp-nav-hover-bg: #f5f7fa;
+  --pp-nav-fg: #475569;
+  --pp-divider: #eef1f5;
+  --pp-input-bg: #ffffff;
+}
+
+[data-theme="dark-navy"], [data-theme="dark"] {
+  --pp-page-bg: #0a0e16;
+  --pp-sidebar-bg: #0d121c;
+  --pp-sidebar-border: rgba(255, 255, 255, 0.06);
+  --pp-card-bg: #11161f;
+  --pp-card-border: rgba(255, 255, 255, 0.07);
+  --pp-text-primary: #f1f5f9;
+  --pp-text-secondary: #8b93a1;
+  --pp-text-muted: #5b6472;
+  --pp-accent: #3b82f6;
+  --pp-accent-hover: #60a5fa;
+  --pp-nav-active-bg: rgba(59, 130, 246, 0.14);
+  --pp-nav-active-fg: #60a5fa;
+  --pp-nav-hover-bg: rgba(255, 255, 255, 0.04);
+  --pp-nav-fg: #8b93a1;
+  --pp-divider: rgba(255, 255, 255, 0.06);
+  --pp-input-bg: #0d121c;
+}
+
+/* ─── Variables thème PointApp (legacy --pt-*) ──────────────────── */
 
 [data-theme="light"] {
   --pt-sidebar-bg: #0f2a52;
@@ -176,6 +230,7 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
   }
   body {
     @apply bg-background text-foreground;

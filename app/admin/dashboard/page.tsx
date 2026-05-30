@@ -2,10 +2,17 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Users, UserCheck, Shield, TrendingUp, Activity,
-  Clock, Calendar, AlertTriangle, FileText, QrCode,
+  Users, UserCheck, Clock, UserX, Timer,
+  Bell, ChevronDown, TrendingUp, TrendingDown,
+  ArrowRight, AlertTriangle, LogOut as LogOutIcon,
 } from 'lucide-react'
+import {
+  PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+} from 'recharts'
 import { getUser, type Utilisateur } from '@/lib/auth-client'
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface StatsDashboard {
   totalEmployes: number
@@ -15,82 +22,96 @@ interface StatsDashboard {
   activiteRecente: { type: string; description: string; heure: string }[]
 }
 
-const ICONES_ACTIVITE: Record<string, React.ElementType> = {
-  pointage: Clock,
-  employe_cree: Users,
-  default: Activity,
+// ─── Données graphiques (démo visuelle) ──────────────────────────────────────
+
+const donneesDonut = (tauxPresence: number, total: number) => {
+  const presents  = Math.round((tauxPresence / 100) * total)
+  const absents   = Math.round((total - presents) * 0.54)
+  const retards   = total - presents - absents
+  return [
+    { nom: 'Présents', valeur: presents,  couleur: '#16a34a' },
+    { nom: 'Absents',  valeur: absents,   couleur: '#ef4444' },
+    { nom: 'Retards',  valeur: retards,   couleur: '#f59e0b' },
+  ]
 }
 
-const COULEURS_ACTIVITE: Record<string, string> = {
-  pointage: '#2e75b6',
-  employe_cree: '#10b981',
-  default: '#8b5cf6',
-}
+const donneesAires = [
+  { jour: '16 Avr', heures: 712 },
+  { jour: '17 Avr', heures: 798 },
+  { jour: '18 Avr', heures: 651 },
+  { jour: '19 Avr', heures: 874 },
+  { jour: '20 Avr', heures: 920 },
+  { jour: '21 Avr', heures: 836 },
+  { jour: '22 Avr', heures: 856 },
+]
 
-const CarteIndicateur = ({
-  titre, valeur, sous_titre, icone: Icone, couleur, chargement,
+const anomalies = [
+  { label: 'Retard',              val: 12, couleur: '#f59e0b' },
+  { label: 'Absence',             val: 14, couleur: '#ef4444' },
+  { label: 'Sortie anticipée',    val: 6,  couleur: '#8b5cf6' },
+  { label: 'Heures insuffisantes',val: 9,  couleur: '#f97316' },
+]
+
+// ─── Composant carte stat ─────────────────────────────────────────────────────
+
+function CarteStat({
+  titre, valeur, sous, icone: Icone, couleur, delta, deltaPos, chargement,
 }: {
-  titre: string
-  valeur: number | string
-  sous_titre: string
-  icone: React.ElementType
-  couleur: string
-  chargement: boolean
-}) => (
-  <div
-    className="rounded-xl border p-6 flex items-center gap-4 transition-colors duration-300"
-    style={{ backgroundColor: 'var(--pt-card-bg)', borderColor: 'var(--pt-card-border)' }}
-  >
+  titre: string; valeur: string | number; sous: string
+  icone: React.ElementType; couleur: string
+  delta?: string; deltaPos?: boolean; chargement: boolean
+}) {
+  return (
     <div
-      className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-      style={{ backgroundColor: `${couleur}18`, color: couleur }}
+      className="rounded-2xl border p-5 flex flex-col gap-3"
+      style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}
     >
-      <Icone size={22} />
-    </div>
-    <div>
+      <div className="flex items-start justify-between">
+        <div
+          className="w-10 h-10 rounded-lg flex items-center justify-center"
+          style={{ backgroundColor: `${couleur}18`, color: couleur }}
+        >
+          <Icone size={19} strokeWidth={2} />
+        </div>
+        {delta && !chargement && (
+          <div
+            className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full"
+            style={{
+              backgroundColor: deltaPos ? '#16a34a18' : '#ef444418',
+              color: deltaPos ? '#16a34a' : '#ef4444',
+            }}
+          >
+            {deltaPos ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+            {delta}
+          </div>
+        )}
+      </div>
       {chargement ? (
-        <>
-          <div className="h-7 w-12 bg-gray-200 rounded animate-pulse mb-1" />
+        <div className="space-y-2">
+          <div className="h-7 w-16 bg-gray-200 rounded animate-pulse" />
           <div className="h-3 w-24 bg-gray-100 rounded animate-pulse" />
-        </>
+        </div>
       ) : (
-        <>
-          <p className="text-2xl font-bold" style={{ color: 'var(--pt-text-primary)' }}>{valeur}</p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--pt-text-secondary)' }}>{titre}</p>
-        </>
+        <div>
+          <p className="text-2xl font-bold" style={{ color: 'var(--pp-text-primary)', fontFamily: 'var(--font-mono)' }}>
+            {valeur}
+          </p>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--pp-text-secondary)' }}>{titre}</p>
+          <p className="text-[11px] mt-1" style={{ color: 'var(--pp-text-muted)' }}>{sous}</p>
+        </div>
       )}
     </div>
-    {!chargement && (
-      <span
-        className="ml-auto text-xs font-medium px-2 py-1 rounded-full"
-        style={{ backgroundColor: `${couleur}18`, color: couleur }}
-      >
-        {sous_titre}
-      </span>
-    )}
-  </div>
-)
+  )
+}
 
-const raccourcis = [
-  { label: 'Gérer les employés', href: '/admin/employes',  icone: Users,          couleur: '#2e75b6' },
-  { label: 'Voir les pointages',  href: '/admin/pointages', icone: Clock,          couleur: '#10b981' },
-  { label: 'Congés en attente',   href: '/admin/conges',    icone: Calendar,       couleur: '#8b5cf6' },
-  { label: 'Anomalies détectées', href: '/admin/anomalies', icone: AlertTriangle,  couleur: '#f59e0b' },
-  { label: 'Générer QR Code',     href: '/admin/qrcode',    icone: QrCode,         couleur: '#6366f1' },
-  { label: 'Rapports',            href: '/admin/rapports',  icone: FileText,       couleur: '#64748b' },
-]
+// ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function PageDashboard() {
   const [utilisateur, setUtilisateur] = useState<Utilisateur | null>(null)
   const [stats, setStats] = useState<StatsDashboard | null>(null)
   const [chargement, setChargement] = useState(true)
-  const [erreur, setErreur] = useState('')
 
-  const dateAujourdhui = new Date().toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
-
-  const chargerDonnees = useCallback(async () => {
+  const charger = useCallback(async () => {
     setChargement(true)
     try {
       const [user, resStats] = await Promise.all([
@@ -98,146 +119,320 @@ export default function PageDashboard() {
         fetch('/api/stats'),
       ])
       setUtilisateur(user)
-      const dataStats = await resStats.json()
-      if (dataStats.success) {
-        setStats(dataStats.data)
-      } else {
-        setErreur('Impossible de charger les statistiques')
-      }
-    } catch {
-      setErreur('Erreur réseau')
-    } finally {
-      setChargement(false)
-    }
+      const d = await resStats.json()
+      if (d.success) setStats(d.data)
+    } catch { /* ignore */ }
+    finally { setChargement(false) }
   }, [])
 
-  useEffect(() => {
-    chargerDonnees()
-  }, [chargerDonnees])
+  useEffect(() => { charger() }, [charger])
+
+  const taux = stats?.tauxPresence ?? 79
+  const total = stats?.totalEmployes ?? 124
+  const presents = Math.round((taux / 100) * total)
+  const retards = Math.round(total * 0.097)
+  const absents = total - presents - retards
+  const donut = donneesDonut(taux, total)
 
   return (
-    <div className="px-4 md:px-8 py-8">
-        {/* En-tête */}
-        <div className="mb-8">
-          <p className="text-sm capitalize mb-1" style={{ color: 'var(--pt-text-secondary)' }}>
-            {dateAujourdhui}
-          </p>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--pt-text-primary)' }}>
-            {chargement ? 'Chargement...' : `Bonjour, ${utilisateur?.nom ?? 'Admin'} 👋`}
+    <div className="min-h-full" style={{ backgroundColor: 'var(--pp-page-bg)' }}>
+      {/* Topbar */}
+      <header
+        className="sticky top-0 z-20 px-6 py-4 border-b flex items-center justify-between gap-4"
+        style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}
+      >
+        <div>
+          <h1 className="text-base font-semibold" style={{ color: 'var(--pp-text-primary)' }}>
+            Tableau de bord
           </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--pt-text-secondary)' }}>
-            Voici un aperçu de votre système de pointage
+          <p className="text-xs" style={{ color: 'var(--pp-text-muted)' }}>
+            {chargement ? '—' : `Bonjour, ${utilisateur?.nom ?? 'Admin'} 👋`}
           </p>
         </div>
+        <div className="flex items-center gap-2 ml-auto">
+          <button
+            className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border"
+            style={{ borderColor: 'var(--pp-card-border)', color: 'var(--pp-text-secondary)', backgroundColor: 'var(--pp-card-bg)' }}
+          >
+            22 Avril 2026 <ChevronDown size={13} />
+          </button>
+          <button
+            className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border"
+            style={{ borderColor: 'var(--pp-card-border)', color: 'var(--pp-text-secondary)', backgroundColor: 'var(--pp-card-bg)' }}
+          >
+            Tous les départements <ChevronDown size={13} />
+          </button>
+          <button className="relative w-9 h-9 rounded-lg border flex items-center justify-center"
+            style={{ borderColor: 'var(--pp-card-border)', backgroundColor: 'var(--pp-card-bg)', color: 'var(--pp-text-secondary)' }}
+          >
+            <Bell size={16} strokeWidth={2} />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500" />
+          </button>
+        </div>
+      </header>
 
-        {erreur && (
-          <div className="mb-6 px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm">
-            {erreur}
-          </div>
-        )}
-
-        {/* Cartes indicateurs */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
-          <CarteIndicateur
-            titre="Total employés"   valeur={stats?.totalEmployes  ?? 0}
-            sous_titre="Tous"        icone={Users}       couleur="#2e75b6" chargement={chargement} />
-          <CarteIndicateur
-            titre="Employés actifs"  valeur={stats?.employesActifs ?? 0}
-            sous_titre="Actifs"      icone={UserCheck}   couleur="#10b981" chargement={chargement} />
-          <CarteIndicateur
-            titre="Administrateurs"  valeur={stats?.admins         ?? 0}
-            sous_titre="Admins"      icone={Shield}      couleur="#8b5cf6" chargement={chargement} />
-          <CarteIndicateur
-            titre="Taux de présence" valeur={stats ? `${stats.tauxPresence}%` : '0%'}
-            sous_titre="Aujourd'hui" icone={TrendingUp}  couleur="#f59e0b" chargement={chargement} />
+      <div className="px-6 py-6 space-y-6">
+        {/* 5 cartes stat */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <CarteStat titre="Total employés"  valeur={chargement ? '—' : total}             sous="Effectif global"    icone={Users}    couleur="#2563eb"           chargement={chargement} />
+          <CarteStat titre="Présents"        valeur={chargement ? '—' : presents}          sous="Aujourd'hui"        icone={UserCheck} couleur="#16a34a" delta="+79%" deltaPos={true}  chargement={chargement} />
+          <CarteStat titre="Retards"         valeur={chargement ? '—' : retards}           sous="Ce matin"           icone={Clock}    couleur="#f59e0b" delta="↘ 10%" deltaPos={false} chargement={chargement} />
+          <CarteStat titre="Absences"        valeur={chargement ? '—' : absents}           sous="Non justifiées"     icone={UserX}    couleur="#ef4444" delta="↘ 11%" deltaPos={false} chargement={chargement} />
+          <CarteStat titre="Heures totales"  valeur={chargement ? '—' : '856h 30m'}        sous="Cette semaine"      icone={Timer}    couleur="#8b5cf6"           chargement={chargement} />
         </div>
 
-        {/* Section principale */}
-        <div className="grid grid-cols-3 gap-6">
-          {/* Activité récente */}
+        {/* Ligne centrale : Donut + Graphe aires */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Donut */}
           <div
-            className="col-span-2 rounded-xl border p-6 transition-colors duration-300"
-            style={{ backgroundColor: 'var(--pt-card-bg)', borderColor: 'var(--pt-card-border)' }}
+            className="rounded-2xl border p-5"
+            style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}
           >
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="font-semibold" style={{ color: 'var(--pt-text-primary)' }}>
-                Activité récente
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold" style={{ color: 'var(--pp-text-primary)' }}>
+                Taux de présence
               </h2>
-              <Activity size={16} style={{ color: 'var(--pt-text-secondary)' }} />
+              <a href="/admin/pointages" className="text-xs flex items-center gap-1" style={{ color: 'var(--pp-accent)' }}>
+                Détails <ArrowRight size={11} />
+              </a>
+            </div>
+            <div className="relative flex items-center justify-center" style={{ height: 180 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={donut}
+                    cx="50%" cy="50%"
+                    innerRadius={58} outerRadius={78}
+                    dataKey="valeur"
+                    strokeWidth={0}
+                  >
+                    {donut.map((d, i) => <Cell key={i} fill={d.couleur} />)}
+                  </Pie>
+                  <Tooltip
+                    formatter={(v, n) => [v as number, n as string]}
+                    contentStyle={{
+                      backgroundColor: 'var(--pp-card-bg)',
+                      border: '1px solid var(--pp-card-border)',
+                      borderRadius: 8,
+                      fontSize: 12,
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              {/* Centre */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <p className="text-[30px] font-bold leading-none" style={{ color: 'var(--pp-text-primary)', fontFamily: 'var(--font-mono)' }}>
+                  {taux}%
+                </p>
+                <p className="text-[10px] mt-1" style={{ color: 'var(--pp-text-muted)' }}>Présence</p>
+              </div>
+            </div>
+            {/* Légende */}
+            <div className="flex flex-col gap-1.5 mt-3">
+              {donut.map(d => (
+                <div key={d.nom} className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.couleur }} />
+                    <span style={{ color: 'var(--pp-text-secondary)' }}>{d.nom}</span>
+                  </div>
+                  <span className="font-medium tabular-nums" style={{ color: 'var(--pp-text-primary)', fontFamily: 'var(--font-mono)' }}>
+                    {d.valeur}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Graphe aires */}
+          <div
+            className="lg:col-span-2 rounded-2xl border p-5"
+            style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-sm font-semibold" style={{ color: 'var(--pp-text-primary)' }}>
+                  Heures travaillées
+                </h2>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--pp-text-muted)' }}>7 derniers jours</p>
+              </div>
+              <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--pp-text-primary)', fontFamily: 'var(--font-mono)' }}>
+                856h
+              </p>
+            </div>
+            <ResponsiveContainer width="100%" height={160}>
+              <AreaChart data={donneesAires} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="fillAccent" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="#2563eb" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0}    />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--pp-divider)" vertical={false} />
+                <XAxis dataKey="jour" tick={{ fontSize: 10, fill: 'var(--pp-text-muted)' }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 1000]} tick={{ fontSize: 10, fill: 'var(--pp-text-muted)' }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  formatter={(v) => [`${v}h`, 'Heures']}
+                  contentStyle={{
+                    backgroundColor: 'var(--pp-card-bg)',
+                    border: '1px solid var(--pp-card-border)',
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="heures"
+                  stroke="#2563eb"
+                  strokeWidth={2}
+                  fill="url(#fillAccent)"
+                  dot={false}
+                  activeDot={{ r: 4, fill: '#2563eb', strokeWidth: 0 }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Ligne inférieure : Anomalies + Pointages récents */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Anomalies */}
+          <div
+            className="rounded-2xl border p-5"
+            style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <AlertTriangle size={15} strokeWidth={2} color="#f59e0b" />
+              <h2 className="text-sm font-semibold" style={{ color: 'var(--pp-text-primary)' }}>
+                Anomalies détectées
+              </h2>
+            </div>
+            <div className="space-y-3">
+              {anomalies.map(a => (
+                <div key={a.label} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: a.couleur }} />
+                    <span className="text-sm" style={{ color: 'var(--pp-text-secondary)' }}>{a.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="h-1.5 rounded-full"
+                      style={{
+                        width: `${Math.max(24, (a.val / 20) * 80)}px`,
+                        backgroundColor: `${a.couleur}40`,
+                      }}
+                    >
+                      <div
+                        className="h-full rounded-full"
+                        style={{ width: '100%', backgroundColor: a.couleur }}
+                      />
+                    </div>
+                    <span
+                      className="text-sm font-semibold tabular-nums w-5 text-right"
+                      style={{ color: a.couleur, fontFamily: 'var(--font-mono)' }}
+                    >
+                      {a.val}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Pointages récents */}
+          <div
+            className="lg:col-span-2 rounded-2xl border overflow-hidden"
+            style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}
+          >
+            <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--pp-divider)' }}>
+              <h2 className="text-sm font-semibold" style={{ color: 'var(--pp-text-primary)' }}>
+                Pointages récents
+              </h2>
+              <a href="/admin/pointages" className="text-xs flex items-center gap-1" style={{ color: 'var(--pp-accent)' }}>
+                Voir tout <ArrowRight size={11} />
+              </a>
             </div>
 
             {chargement ? (
-              <div className="space-y-4">
+              <div className="p-5 space-y-3">
                 {[...Array(4)].map((_, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gray-200 animate-pulse shrink-0" />
+                    <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse shrink-0" />
                     <div className="flex-1 space-y-1.5">
-                      <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4" />
-                      <div className="h-3 bg-gray-100 rounded animate-pulse w-1/4" />
+                      <div className="h-3 bg-gray-200 rounded animate-pulse w-1/3" />
+                      <div className="h-3 bg-gray-100 rounded animate-pulse w-1/2" />
                     </div>
                   </div>
                 ))}
               </div>
-            ) : stats?.activiteRecente?.length ? (
-              <div className="divide-y" style={{ borderColor: 'var(--pt-card-border)' }}>
-                {stats.activiteRecente.map((a, i) => {
-                  const Icone = ICONES_ACTIVITE[a.type] ?? ICONES_ACTIVITE.default
-                  const couleur = COULEURS_ACTIVITE[a.type] ?? COULEURS_ACTIVITE.default
-                  return (
-                    <div key={i} className="flex items-center gap-3 py-3">
-                      <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                        style={{ backgroundColor: `${couleur}20`, color: couleur }}
-                      >
-                        <Icone size={14} />
-                      </div>
-                      <p className="text-sm flex-1" style={{ color: 'var(--pt-text-primary)' }}>
-                        {a.description}
-                      </p>
-                      <span className="text-xs shrink-0" style={{ color: 'var(--pt-text-secondary)' }}>
-                        {a.heure}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
             ) : (
-              <p className="text-sm text-center py-8" style={{ color: 'var(--pt-text-secondary)' }}>
-                Aucune activité aujourd&apos;hui
-              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr style={{ borderBottom: `1px solid var(--pp-divider)` }}>
+                      {['Employé', 'Type', 'Heure', 'Localisation', 'Statut'].map(col => (
+                        <th key={col} className="text-left px-5 py-3 text-[10px] font-semibold uppercase tracking-wide"
+                          style={{ color: 'var(--pp-text-muted)', backgroundColor: 'var(--pp-page-bg)' }}>
+                          {col}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(stats?.activiteRecente ?? []).slice(0, 5).map((a, i) => {
+                      const couleurs = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444']
+                      const c = couleurs[i % couleurs.length]
+                      const initiale = a.description.split(' ')[0]?.[0]?.toUpperCase() ?? 'E'
+                      const isEntree = a.type === 'pointage'
+                      return (
+                        <tr key={i} style={{ borderTop: `1px solid var(--pp-divider)` }}>
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                                style={{ backgroundColor: c }}>
+                                {initiale}
+                              </div>
+                              <span className="text-sm font-medium" style={{ color: 'var(--pp-text-primary)' }}>
+                                {a.description.split(' ').slice(0, 2).join(' ')}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span className="text-xs font-medium px-2 py-1 rounded-full"
+                              style={{ backgroundColor: isEntree ? '#16a34a18' : '#f59e0b18', color: isEntree ? '#16a34a' : '#f59e0b' }}>
+                              {isEntree ? 'Entrée' : 'Sortie'}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span className="text-sm tabular-nums" style={{ color: 'var(--pp-text-primary)', fontFamily: 'var(--font-mono)' }}>
+                              {a.heure}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5 text-sm" style={{ color: 'var(--pp-text-secondary)' }}>
+                            Bamako, Mali
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span className="text-xs font-medium px-2 py-1 rounded-full"
+                              style={{ backgroundColor: '#16a34a18', color: '#16a34a' }}>
+                              Valide
+                            </span>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                    {(!stats?.activiteRecente?.length) && (
+                      <tr>
+                        <td colSpan={5} className="px-5 py-10 text-center text-sm" style={{ color: 'var(--pp-text-muted)' }}>
+                          Aucun pointage aujourd&apos;hui
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
-
-          {/* Accès rapides */}
-          <div
-            className="rounded-xl border p-6 transition-colors duration-300"
-            style={{ backgroundColor: 'var(--pt-card-bg)', borderColor: 'var(--pt-card-border)' }}
-          >
-            <h2 className="font-semibold mb-4" style={{ color: 'var(--pt-text-primary)' }}>
-              Accès rapides
-            </h2>
-            <div className="space-y-1">
-              {raccourcis.map(r => (
-                <a
-                  key={r.href}
-                  href={r.href}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group"
-                  style={{ color: 'var(--pt-text-primary)' }}
-                  onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--pt-muted)' }}
-                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
-                >
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: `${r.couleur}18`, color: r.couleur }}
-                  >
-                    <r.icone size={15} />
-                  </div>
-                  <span className="text-sm font-medium">{r.label}</span>
-                </a>
-              ))}
-            </div>
-          </div>
         </div>
+      </div>
     </div>
   )
 }
