@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Bell, Clock, MapPin, CheckCircle, AlertCircle, Loader2, QrCode, Calendar, ChevronRight } from 'lucide-react'
 import { getUser, logout, type Utilisateur } from '@/lib/auth-client'
 

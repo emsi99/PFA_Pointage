@@ -6,7 +6,6 @@ import {
   Users, UserCheck, UserX, Shield,
   ChevronLeft, ChevronRight, X, CheckCircle, AlertCircle,
 } from 'lucide-react'
-import { getUser, type Utilisateur } from '@/lib/auth-client'
 
 interface Employe {
   _id: string
@@ -90,8 +89,23 @@ export default function PageEmployes() {
   }, [])
 
   useEffect(() => {
-    chargerEmployes()
-  }, [chargerEmployes])
+    let actif = true
+
+    const initialiserEmployes = async () => {
+      try {
+        const res = await fetch('/api/employes')
+        const d = await res.json()
+        if (actif && d.success) setEmployes(d.data)
+      } catch { /* ignore */ }
+      finally {
+        if (actif) setChargement(false)
+      }
+    }
+
+    initialiserEmployes()
+
+    return () => { actif = false }
+  }, [])
 
   const supprimer = async (id: string, nom: string) => {
     if (!confirm(`Supprimer ${nom} ? Cette action est irréversible.`)) return
