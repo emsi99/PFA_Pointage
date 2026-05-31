@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Analytics } from '@vercel/analytics/next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { cookies } from 'next/headers'
 import { ThemeProvider } from '@/lib/theme-context'
@@ -38,6 +39,7 @@ export default async function RootLayout({
         <ThemeProvider initialTheme={theme}>
           {children}
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   )
