@@ -1,65 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-import { verifyToken } from '@/lib/auth'
 import { connectDB } from '@/lib/mongodb'
+import QRToken from '@/models/QRToken'
 import Pointage from '@/models/Pointage'
+import { cookies } from 'next/headers'
+import { jwtVerify } from 'jose'
 
-// GET — historique des pointages de l'employé connecté
-export async function GET(request: NextRequest) {
-  const cookieStore = await cookies()
-  const token = cookieStore.get('token')?.value
-  if (!token) return NextResponse.json({ success: false, message: 'Non authentifié' }, { status: 401 })
-
-  const payload = verifyToken(token)
-  if (!payload) return NextResponse.json({ success: false, message: 'Token invalide' }, { status: 401 })
-
-  await connectDB()
-
-  const { searchParams } = new URL(request.url)
-  const limite = Math.min(parseInt(searchParams.get('limite') ?? '20'), 50)
-
-  const pointages = await Pointage.find({ user_id: payload.id })
-    .sort({ date: -1, heure: -1 })
-    .limit(limite)
-
-  return NextResponse.json({ success: true, data: pointages })
+const ZONE = {
+  latitude: 33.5731,   // ← replace with your office GPS coords
+  longitude: -7.5898,
+  radius: 100          // meters
 }
 
-// POST — enregistrer un pointage
-export async function POST(request: NextRequest) {
-  const cookieStore = await cookies()
-  const token = cookieStore.get('token')?.value
-  if (!token) return NextResponse.json({ success: false, message: 'Non authentifié' }, { status: 401 })
+function distanceMeters(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371000
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = Math.sin(dLat/2) ** 2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+}
 
-  const payload = verifyToken(token)
-  if (!payload) return NextResponse.json({ success: false, message: 'Token invalide' }, { status: 401 })
-
-  const body = await request.json()
-  const { type, latitude, longitude } = body as {
-    type: 'entree' | 'sortie'
-    latitude: number
-    longitude: number
-  }
-
-  if (!type || !['entree', 'sortie'].includes(type)) {
-    return NextResponse.json({ success: false, message: 'Type de pointage invalide' }, { status: 400 })
-  }
-
+export async function POST(req: NextRequest) {
   await connectDB()
 
-  const maintenant = new Date()
-  const date = maintenant.toISOString().slice(0, 10)
-  const heure = maintenant.toTimeString().slice(0, 5)
+  const { qrToken, latitude, longitude } = await req.json()
 
-  const pointage = await Pointage.create({
-    user_id: payload.id,
-    date,
-    heure,
+  // 1. Check QR token
+  const qr = await QRToken.findOne({ token: qrToken })
+  if (!qr || qr.expiresAt < new Date()) {
+    return NextResponse.json({ success: false, message: 'QR Code invalide ou expiré' }, { status: 400 })
+  }
+
+  // 2. Check GPS
+  const distance = distanceMeters(latitude, longitude, ZONE.latitude, ZONE.longitude)
+  if (distance > ZONE.radius) {
+    return NextResponse.json({ success: false, message: 'Vous êtes hors zone autorisée' }, { status: 400 })
+  }
+
+  // 3. Get user from JWT
+  const token = (await cookies()).get('token')?.value!
+  const secret = new TextEncoder().encode(process.env.JWT_SECRET)
+  const { payload } = await jwtVerify(token, secret) as any
+
+  // 4. Determine entree or sortie
+  const lastPointage = await Pointage.findOne({ userId: payload.id }).sort({ createdAt: -1 })
+  const type = !lastPointage || lastPointage.type === 'sortie' ? 'entree' : 'sortie'
+
+  // 5. Save pointage
+  await Pointage.create({
+    userId: payload.id,
     type,
-    latitude:  latitude  ?? 0,
-    longitude: longitude ?? 0,
-    valide:    true,
+    latitude,
+    longitude,
+    date: new Date(),
   })
 
-  return NextResponse.json({ success: true, data: pointage }, { status: 201 })
+  return NextResponse.json({ success: true, message: `Pointage ${type} enregistré !` })
 }

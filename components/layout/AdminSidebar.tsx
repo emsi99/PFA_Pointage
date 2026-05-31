@@ -17,7 +17,7 @@ const itemsNav = [
   { label: 'Congés',     href: '/admin/conges',     icone: Calendar        },
   { label: 'Anomalies',  href: '/admin/anomalies',  icone: AlertTriangle   },
   { label: 'Rapports',   href: '/admin/rapports',   icone: FileText        },
-  { label: 'QR Code',    href: '/admin/qrcode',     icone: QrCode          },
+  { label: 'QR Code',    href: '/admin/qr-display',     icone: QrCode          },
   { label: 'Paramètres', href: '/admin/parametres', icone: Settings        },
 ]
 
