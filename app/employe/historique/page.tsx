@@ -25,17 +25,18 @@ export default function PageHistorique() {
   const [chargement, setChargement] = useState(true)
   const [moisActuel, setMoisActuel] = useState(new Date())
 
-  const charger = useCallback(async () => {
-    setChargement(true)
-    try {
-      const res = await fetch('/api/pointages?limite=50')
-      const d = await res.json()
-      if (d.success) setPointages(d.data)
-    } catch { /* ignore */ }
-    finally { setChargement(false) }
+  useEffect(() => {
+    const charger = async () => {
+      setChargement(true)
+      try {
+        const res = await fetch('/api/pointages?limite=50')
+        const d = await res.json()
+        if (d.success) setPointages(d.data)
+      } catch { /* ignore */ }
+      finally { setChargement(false) }
+    }
+    charger()
   }, [])
-
-  useEffect(() => { charger() }, [charger])
 
   // Grouper par jour
   const joursMap = new Map<string, JourPointage>()

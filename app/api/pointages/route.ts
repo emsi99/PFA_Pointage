@@ -37,9 +37,14 @@ export async function POST(req: NextRequest) {
   }
 
   // 3. Get user from JWT
-  const token = (await cookies()).get('token')?.value!
+  const cookieStore = await cookies()
+  const token = cookieStore.get('token')?.value
+  if (!token) {
+    return NextResponse.json({ success: false, message: 'Non authentifié' }, { status: 401 })
+  }
+
   const secret = new TextEncoder().encode(process.env.JWT_SECRET)
-  const { payload } = await jwtVerify(token, secret) as any
+  const { payload } = await jwtVerify(token, secret) as { payload: { id: string; role: string } }
 
   // 4. Determine entree or sortie
   const lastPointage = await Pointage.findOne({ userId: payload.id }).sort({ createdAt: -1 })

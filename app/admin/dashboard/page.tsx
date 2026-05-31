@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import {
   Users, UserCheck, Clock, UserX, Timer,
   Bell, ChevronDown, TrendingUp, TrendingDown,
-  ArrowRight, AlertTriangle, LogOut as LogOutIcon,
+  ArrowRight, AlertTriangle,
 } from 'lucide-react'
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
@@ -111,21 +111,22 @@ export default function PageDashboard() {
   const [stats, setStats] = useState<StatsDashboard | null>(null)
   const [chargement, setChargement] = useState(true)
 
-  const charger = useCallback(async () => {
-    setChargement(true)
-    try {
-      const [user, resStats] = await Promise.all([
-        getUser(),
-        fetch('/api/stats'),
-      ])
-      setUtilisateur(user)
-      const d = await resStats.json()
-      if (d.success) setStats(d.data)
-    } catch { /* ignore */ }
-    finally { setChargement(false) }
+  useEffect(() => {
+    const charger = async () => {
+      setChargement(true)
+      try {
+        const [user, resStats] = await Promise.all([
+          getUser(),
+          fetch('/api/stats'),
+        ])
+        setUtilisateur(user)
+        const d = await resStats.json()
+        if (d.success) setStats(d.data)
+      } catch { /* ignore */ }
+      finally { setChargement(false) }
+    }
+    charger()
   }, [])
-
-  useEffect(() => { charger() }, [charger])
 
   const taux = stats?.tauxPresence ?? 79
   const total = stats?.totalEmployes ?? 124

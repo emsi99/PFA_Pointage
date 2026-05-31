@@ -61,7 +61,6 @@ function Stat({ label, val, icone: Icone, c, load }: {
 }
 
 export default function PageEmployes() {
-  const [utilisateur, setUtilisateur] = useState<Utilisateur | null>(null)
   const [employes, setEmployes] = useState<Employe[]>([])
   const [chargement, setChargement] = useState(true)
   const [recherche, setRecherche] = useState('')
@@ -91,7 +90,6 @@ export default function PageEmployes() {
   }, [])
 
   useEffect(() => {
-    getUser().then(u => setUtilisateur(u))
     chargerEmployes()
   }, [chargerEmployes])
 

@@ -15,7 +15,10 @@ export default function QRDisplayPage() {
 
   // Generate token on mount and every 5 minutes
   useEffect(() => {
-    generateToken()
+    const init = async () => {
+      await generateToken()
+    }
+    init()
     const interval = setInterval(generateToken, 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])

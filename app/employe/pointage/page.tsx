@@ -22,19 +22,20 @@ export default function PageAccueilEmploye() {
     return () => clearInterval(id)
   }, [])
 
-  const init = useCallback(async () => {
-    setChargement(true)
-    try {
-      const [user, resP] = await Promise.all([getUser(), fetch('/api/pointages?limite=1')])
-      if (!user) { window.location.replace('/login'); return }
-      setUtilisateur(user)
-      const d = await resP.json()
-      if (d.success && d.data.length) setDernierPointage({ type: d.data[0].type, heure: d.data[0].heure })
-    } catch { /* ignore */ }
-    finally { setChargement(false) }
+  useEffect(() => {
+    const init = async () => {
+      setChargement(true)
+      try {
+        const [user, resP] = await Promise.all([getUser(), fetch('/api/pointages?limite=1')])
+        if (!user) { window.location.replace('/login'); return }
+        setUtilisateur(user)
+        const d = await resP.json()
+        if (d.success && d.data.length) setDernierPointage({ type: d.data[0].type, heure: d.data[0].heure })
+      } catch { /* ignore */ }
+      finally { setChargement(false) }
+    }
+    init()
   }, [])
-
-  useEffect(() => { init() }, [init])
 
   const pointer = async (type: 'entree' | 'sortie') => {
     setEnCours(true)

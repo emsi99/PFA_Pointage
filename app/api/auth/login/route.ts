@@ -79,10 +79,11 @@ export async function POST(request: NextRequest) {
         role: utilisateur.role,
       },
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Login error details:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { success: false, message: `Erreur serveur: ${error.message}` },
+      { success: false, message: `Erreur serveur: ${message}` },
       { status: 500 }
     )
   }
