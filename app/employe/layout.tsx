@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { Home, Clock, QrCode, Calendar, User, Sun, Moon, LogOut } from 'lucide-react'
 import { useTheme } from '@/lib/theme-context'
-import { getUser, logout } from '@/lib/auth-client'
+import { getUser, logout, type Utilisateur } from '@/lib/auth-client'
 import Logo from '@/components/Logo'
 import { cn } from '@/lib/utils'
 import EmployeHeader from '@/components/layout/EmployeHeader'
@@ -100,7 +100,7 @@ function EmployeSidebar({ activePath, nomUtilisateur, initiale }: { activePath: 
 
 export default function EmployeLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<Utilisateur | null>(null)
   const [chargement, setChargement] = useState(true)
 
   useEffect(() => {

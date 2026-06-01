@@ -1,16 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bell, Clock, MapPin, CheckCircle, AlertCircle, Loader2, QrCode, Calendar, ChevronRight } from 'lucide-react'
-import { getUser, logout, type Utilisateur } from '@/lib/auth-client'
+import { Clock, MapPin, CheckCircle, AlertCircle, QrCode, Calendar, ChevronRight } from 'lucide-react'
+import { getUser, type Utilisateur } from '@/lib/auth-client'
 
 interface DernierPointage { type: 'entree' | 'sortie'; heure: string }
 
 export default function PageAccueilEmploye() {
   const [utilisateur, setUtilisateur] = useState<Utilisateur | null>(null)
-  const [chargement, setChargement] = useState(true)
   const [dernierPointage, setDernierPointage] = useState<DernierPointage | null>(null)
-  const [enCours, setEnCours] = useState(false)
   const [message, setMessage] = useState<{ ok: boolean; texte: string } | null>(null)
   const [heure, setHeure] = useState('')
 
@@ -23,7 +21,6 @@ export default function PageAccueilEmploye() {
 
   useEffect(() => {
     const init = async () => {
-      setChargement(true)
       try {
         const [user, resP] = await Promise.all([getUser(), fetch('/api/pointages?limite=1')])
         if (!user) { window.location.replace('/login'); return }
@@ -31,45 +28,12 @@ export default function PageAccueilEmploye() {
         const d = await resP.json()
         if (d.success && d.data.length) setDernierPointage({ type: d.data[0].type, heure: d.data[0].heure })
       } catch { /* ignore */ }
-      finally { setChargement(false) }
     }
     init()
   }, [])
 
-  const pointer = async (type: 'entree' | 'sortie') => {
-    setEnCours(true)
-    setMessage(null)
-    try {
-      let lat = 0, lng = 0
-      try {
-        const pos = await new Promise<GeolocationPosition>((res, rej) =>
-          navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 })
-        )
-        lat = pos.coords.latitude; lng = pos.coords.longitude
-      } catch { /* GPS optionnel */ }
-      const res = await fetch('/api/pointages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, latitude: lat, longitude: lng }),
-      })
-      const d = await res.json()
-      if (d.success) {
-        setDernierPointage({ type: d.data.type, heure: d.data.heure })
-        setMessage({ ok: true, texte: type === 'entree' ? 'Entrée enregistrée ✓' : 'Sortie enregistrée ✓' })
-      } else {
-        setMessage({ ok: false, texte: d.message ?? 'Erreur lors du pointage' })
-      }
-    } catch { setMessage({ ok: false, texte: 'Erreur réseau' }) }
-    finally { setEnCours(false) }
-  }
-
-  const deconnecter = async () => { await logout(); window.location.replace('/login') }
-
   const deja = dernierPointage?.type === 'entree'
   const prenom = utilisateur?.prenom ?? utilisateur?.nom ?? 'vous'
-  const initiale = (utilisateur?.prenom ?? utilisateur?.nom ?? 'E')[0].toUpperCase()
-
-  const nomUtilisateur = prenom
   const dateAujourdhui = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (

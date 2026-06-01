@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { BadgeCheck, Briefcase, CalendarDays, IdCard, LogOut, Mail, Phone, Shield, UserRound, Edit2, Save, X, Loader2 } from 'lucide-react'
+import { Briefcase, CalendarDays, IdCard, Mail, Phone, Shield, UserRound, Edit2, Save, X, Loader2 } from 'lucide-react'
+
 import { getUser, logout, updateUser, type Utilisateur } from '@/lib/auth-client'
 
 function ChampProfil({ label, value, icon: Icon, isEditing, onChange, name, type = 'text' }: { 

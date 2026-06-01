@@ -1,17 +1,16 @@
 'use client'
 
-import { LogOut, User } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import ThemeToggle from '@/components/ThemeToggle'
-import { logout, type Utilisateur } from '@/lib/auth-client'
+import { logout } from '@/lib/auth-client'
 
 interface AdminHeaderProps {
   title: string
   subtitle?: string
-  utilisateur?: Utilisateur | null
   rightElement?: React.ReactNode
 }
 
-export default function AdminHeader({ title, subtitle, utilisateur, rightElement }: AdminHeaderProps) {
+export default function AdminHeader({ title, subtitle, rightElement }: AdminHeaderProps) {
   const deconnecter = async () => {
     await logout()
     window.location.replace('/login')

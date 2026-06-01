@@ -3,11 +3,9 @@
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Users, Clock, Calendar,
-  AlertTriangle, FileText, QrCode, LogOut,
+  AlertTriangle, FileText, QrCode,
 } from 'lucide-react'
 import Logo from '@/components/Logo'
-import ThemeToggle from '@/components/ThemeToggle'
-import { logout } from '@/lib/auth-client'
 import { cn } from '@/lib/utils'
 
 const itemsNav = [
@@ -26,11 +24,6 @@ interface Props {
 
 export default function AdminSidebar({ nomUtilisateur }: Props) {
   const pathname = usePathname()
-
-  const deconnecter = async () => {
-    await logout()
-    window.location.replace('/login')
-  }
 
   const initiale = nomUtilisateur?.[0]?.toUpperCase() ?? 'A'
 

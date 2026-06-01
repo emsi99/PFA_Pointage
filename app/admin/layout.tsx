@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Clock, Calendar, QrCode, User } from 'lucide-react'
+import { LayoutDashboard, Users, Clock, Calendar, QrCode } from 'lucide-react'
 import AdminSidebar from '@/components/layout/AdminSidebar'
 import { getUser } from '@/lib/auth-client'
 import { cn } from '@/lib/utils'

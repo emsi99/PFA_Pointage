@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import {
   Users, UserCheck, Clock, UserX, Timer,
   TrendingUp, TrendingDown,
-  ArrowRight, AlertTriangle, LogOut
+  ArrowRight, AlertTriangle
 } from 'lucide-react'
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
