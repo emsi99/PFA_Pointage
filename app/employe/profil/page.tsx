@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Briefcase, CalendarDays, IdCard, Mail, Phone, Shield, UserRound, Edit2, Save, X, Loader2 } from 'lucide-react'
+import { Briefcase, CalendarDays, IdCard, Mail, Phone, Shield, UserRound, Edit2, Save, X, Loader2, LogOut } from 'lucide-react'
 
 import { getUser, logout, updateUser, type Utilisateur } from '@/lib/auth-client'
 
