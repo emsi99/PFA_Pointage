@@ -380,7 +380,7 @@ export default function PageDashboard() {
                             </span>
                           </td>
                           <td className="px-5 py-3.5 text-sm" style={{ color: 'var(--pp-text-secondary)' }}>
-                            Bamako, Mali
+                            Casablanca, Maroc
                           </td>
                           <td className="px-5 py-3.5">
                             <span className="text-xs font-medium px-2 py-1 rounded-full"
