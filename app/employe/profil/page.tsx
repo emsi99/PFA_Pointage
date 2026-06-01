@@ -112,60 +112,65 @@ export default function ProfilEmployePage() {
   }
 
   return (
-    <div className="min-h-full px-4 py-6" style={{ backgroundColor: 'var(--pp-page-bg)' }}>
-      <div className="mx-auto max-w-lg space-y-4">
-        <header className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-semibold" style={{ color: 'var(--pp-text-primary)' }}>Profil</h1>
-            <p className="text-sm" style={{ color: 'var(--pp-text-muted)' }}>Informations de votre compte</p>
-          </div>
-          {!modeEdition ? (
+    <div className="min-h-full px-4 pt-6 pb-8 space-y-6 max-w-lg mx-auto">
+      <header className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--pp-text-primary)' }}>Mon Profil</h1>
+          <p className="text-sm" style={{ color: 'var(--pp-text-muted)' }}>Gérez vos informations personnelles</p>
+        </div>
+        {!modeEdition ? (
+          <button 
+            onClick={() => setModeEdition(true)}
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-colors bg-white dark:bg-white/5 border shadow-sm"
+            style={{ color: 'var(--pp-accent)', borderColor: 'var(--pp-card-border)' }}
+          >
+            <Edit2 size={18} />
+          </button>
+        ) : (
+          <div className="flex gap-2">
             <button 
-              onClick={() => setModeEdition(true)}
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-              style={{ color: 'var(--pp-accent)' }}
+              onClick={annulerEdition}
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-colors bg-white dark:bg-white/5 border shadow-sm text-gray-500"
+              style={{ borderColor: 'var(--pp-card-border)' }}
             >
-              <Edit2 size={20} />
+              <X size={18} />
             </button>
-          ) : (
-            <div className="flex gap-2">
-              <button 
-                onClick={annulerEdition}
-                className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"
-              >
-                <X size={20} />
-              </button>
-              <button 
-                onClick={enregistrer}
-                disabled={sauvegardeEnCours}
-                className="p-2 rounded-full hover:bg-blue-50 transition-colors text-blue-600 disabled:opacity-50"
-              >
-                {sauvegardeEnCours ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
-              </button>
-            </div>
-          )}
-        </header>
+            <button 
+              onClick={enregistrer}
+              disabled={sauvegardeEnCours}
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-colors bg-blue-600 text-white shadow-lg shadow-blue-500/20 disabled:opacity-50"
+            >
+              {sauvegardeEnCours ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+            </button>
+          </div>
+        )}
+      </header>
 
-        <div
-          className="rounded-2xl border p-5"
-          style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold" style={{ backgroundColor: 'var(--pp-accent)' }}>
-              {initiales}
-            </div>
-            <div className="min-w-0">
-              <p className="text-base font-semibold truncate" style={{ color: 'var(--pp-text-primary)' }}>{nomComplet}</p>
-              <p className="text-sm truncate" style={{ color: 'var(--pp-text-muted)' }}>{utilisateur?.email ?? ''}</p>
-              <span className="mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium" style={{ backgroundColor: '#2563eb18', color: '#2563eb' }}>
-                <Shield size={12} strokeWidth={2} />
+      <div
+        className="rounded-3xl border p-6 shadow-sm"
+        style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}
+      >
+        <div className="flex items-center gap-5">
+          <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg" 
+               style={{ backgroundColor: 'var(--pp-accent)', boxShadow: '0 10px 20px -5px var(--pp-accent)' }}>
+            {initiales}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xl font-bold truncate" style={{ color: 'var(--pp-text-primary)' }}>{nomComplet}</p>
+            <p className="text-sm font-medium" style={{ color: 'var(--pp-text-muted)' }}>{utilisateur?.email ?? ''}</p>
+            <div className="mt-3 flex">
+              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider" 
+                    style={{ backgroundColor: '#2563eb12', color: '#2563eb', border: '1px solid #2563eb20' }}>
+                <Shield size={12} strokeWidth={2.5} />
                 Employé
               </span>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="grid gap-3">
+      <div className="grid gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <ChampProfil 
             label="Prénom" 
             value={modeEdition ? formData.prenom : utilisateur?.prenom} 
@@ -182,37 +187,67 @@ export default function ProfilEmployePage() {
             name="nom"
             onChange={handleChange}
           />
-          <ChampProfil 
-            label="Email" 
-            value={utilisateur?.email} 
-            icon={Mail} 
-          />
-          <ChampProfil 
-            label="Téléphone" 
-            value={modeEdition ? formData.telephone : utilisateur?.telephone} 
-            icon={Phone} 
-            isEditing={modeEdition}
-            name="telephone"
-            onChange={handleChange}
-          />
-          <ChampProfil label="Matricule" value={utilisateur?.matricule} icon={IdCard} />
-          <ChampProfil label="Poste" value={utilisateur?.poste} icon={Briefcase} />
-          <ChampProfil label="Département" value={utilisateur?.departement} icon={UserRound} />
-          <ChampProfil label="Solde congés" value={utilisateur?.soldeConges !== undefined ? `${utilisateur.soldeConges} jours` : undefined} icon={CalendarDays} />
-          <ChampProfil label="Statut" value={utilisateur?.statut === 'inactif' ? 'Inactif' : 'Actif'} icon={BadgeCheck} />
+        </div>
+        
+        <ChampProfil 
+          label="Email" 
+          value={utilisateur?.email} 
+          icon={Mail} 
+        />
+        <ChampProfil 
+          label="Téléphone" 
+          value={modeEdition ? formData.telephone : utilisateur?.telephone} 
+          icon={Phone} 
+          isEditing={modeEdition}
+          name="telephone"
+          onChange={handleChange}
+        />
+        
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          <div className="rounded-3xl border p-4" style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}>
+             <div className="flex items-center gap-2 mb-2">
+               <IdCard size={14} className="text-blue-500" />
+               <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Matricule</p>
+             </div>
+             <p className="text-sm font-bold" style={{ color: 'var(--pp-text-primary)' }}>{utilisateur?.matricule || '—'}</p>
+          </div>
+          <div className="rounded-3xl border p-4" style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}>
+             <div className="flex items-center gap-2 mb-2">
+               <Briefcase size={14} className="text-amber-500" />
+               <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Poste</p>
+             </div>
+             <p className="text-sm font-bold truncate" style={{ color: 'var(--pp-text-primary)' }}>{utilisateur?.poste || '—'}</p>
+          </div>
         </div>
 
-        {!modeEdition && (
-          <button
-            onClick={deconnecter}
-            className="w-full rounded-2xl p-4 flex items-center justify-center gap-2 text-sm font-semibold text-white mt-4"
-            style={{ backgroundColor: '#ef4444' }}
-          >
-            <LogOut size={16} strokeWidth={2} />
-            Déconnexion
-          </button>
-        )}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-3xl border p-4" style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}>
+             <div className="flex items-center gap-2 mb-2">
+               <UserRound size={14} className="text-purple-500" />
+               <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Département</p>
+             </div>
+             <p className="text-sm font-bold truncate" style={{ color: 'var(--pp-text-primary)' }}>{utilisateur?.departement || '—'}</p>
+          </div>
+          <div className="rounded-3xl border p-4" style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}>
+             <div className="flex items-center gap-2 mb-2">
+               <CalendarDays size={14} className="text-emerald-500" />
+               <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Solde Congés</p>
+             </div>
+             <p className="text-sm font-bold" style={{ color: 'var(--pp-text-primary)' }}>{utilisateur?.soldeConges ?? 0} jours</p>
+          </div>
+        </div>
       </div>
+
+      {!modeEdition && (
+        <button
+          onClick={deconnecter}
+          className="w-full rounded-3xl p-4 flex items-center justify-center gap-2 text-sm font-bold text-white mt-4 shadow-lg shadow-red-500/20 transition-transform active:scale-95"
+          style={{ backgroundColor: '#ef4444' }}
+        >
+          <LogOut size={18} strokeWidth={2.5} />
+          DÉCONNEXION
+        </button>
+      )}
     </div>
   )
 }
