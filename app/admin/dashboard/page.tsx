@@ -3,14 +3,15 @@
 import { useState, useEffect } from 'react'
 import {
   Users, UserCheck, Clock, UserX, Timer,
-  Bell, ChevronDown, TrendingUp, TrendingDown,
-  ArrowRight, AlertTriangle,
+  TrendingUp, TrendingDown,
+  ArrowRight, AlertTriangle, LogOut
 } from 'lucide-react'
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
 } from 'recharts'
 import { getUser, type Utilisateur } from '@/lib/auth-client'
+import AdminHeader from '@/components/layout/AdminHeader'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -137,40 +138,10 @@ export default function PageDashboard() {
 
   return (
     <div className="min-h-full" style={{ backgroundColor: 'var(--pp-page-bg)' }}>
-      {/* Topbar */}
-      <header
-        className="sticky top-0 z-20 px-6 py-4 border-b flex items-center justify-between gap-4"
-        style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}
-      >
-        <div>
-          <h1 className="text-base font-semibold" style={{ color: 'var(--pp-text-primary)' }}>
-            Tableau de bord
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--pp-text-muted)' }}>
-            {chargement ? '—' : `Bonjour, ${utilisateur?.nom ?? 'Admin'} 👋`}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 ml-auto">
-          <button
-            className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border"
-            style={{ borderColor: 'var(--pp-card-border)', color: 'var(--pp-text-secondary)', backgroundColor: 'var(--pp-card-bg)' }}
-          >
-            22 Avril 2026 <ChevronDown size={13} />
-          </button>
-          <button
-            className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border"
-            style={{ borderColor: 'var(--pp-card-border)', color: 'var(--pp-text-secondary)', backgroundColor: 'var(--pp-card-bg)' }}
-          >
-            Tous les départements <ChevronDown size={13} />
-          </button>
-          <button className="relative w-9 h-9 rounded-lg border flex items-center justify-center"
-            style={{ borderColor: 'var(--pp-card-border)', backgroundColor: 'var(--pp-card-bg)', color: 'var(--pp-text-secondary)' }}
-          >
-            <Bell size={16} strokeWidth={2} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500" />
-          </button>
-        </div>
-      </header>
+      <AdminHeader 
+        title="Tableau de bord"
+        subtitle={chargement ? 'Chargement...' : `Bonjour, ${utilisateur?.nom ?? 'Admin'} 👋`}
+      />
 
       <div className="px-6 py-6 space-y-6">
         {/* 5 cartes stat */}

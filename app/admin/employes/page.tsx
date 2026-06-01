@@ -6,6 +6,7 @@ import {
   Users, UserCheck, UserX, Shield,
   ChevronLeft, ChevronRight, X, CheckCircle, AlertCircle,
 } from 'lucide-react'
+import AdminHeader from '@/components/layout/AdminHeader'
 
 interface Employe {
   _id: string
@@ -160,32 +161,24 @@ export default function PageEmployes() {
 
   const inputCls = 'w-full px-3 py-2.5 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#2563eb]/40'
 
+  const rightActions = (
+    <button
+      onClick={() => setModalOuverte(true)}
+      className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+      style={{ backgroundColor: 'var(--pp-accent)' }}
+    >
+      <Plus size={15} strokeWidth={2} />
+      Ajouter
+    </button>
+  )
+
   return (
     <div className="min-h-full" style={{ backgroundColor: 'var(--pp-page-bg)' }}>
-      {/* Topbar */}
-      <header
-        className="sticky top-0 z-20 px-6 py-4 border-b flex items-center justify-between"
-        style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}
-      >
-        <div>
-          <h1 className="text-base font-semibold" style={{ color: 'var(--pp-text-primary)' }}>
-            Gestion des employés
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--pp-text-muted)' }}>
-            {chargement ? '—' : `${stats.total} employés au total`}
-          </p>
-        </div>
-        <button
-          onClick={() => setModalOuverte(true)}
-          className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-medium"
-          style={{ backgroundColor: 'var(--pp-accent)' }}
-          onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--pp-accent-hover)' }}
-          onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'var(--pp-accent)' }}
-        >
-          <Plus size={15} strokeWidth={2} />
-          Ajouter
-        </button>
-      </header>
+      <AdminHeader 
+        title="Gestion des employés"
+        subtitle={chargement ? 'Chargement...' : `${stats.total} employés au total`}
+        rightElement={rightActions}
+      />
 
       <div className="px-6 py-6 space-y-5">
         {/* Stats */}

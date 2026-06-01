@@ -14,7 +14,6 @@ export default function PageAccueilEmploye() {
   const [message, setMessage] = useState<{ ok: boolean; texte: string } | null>(null)
   const [heure, setHeure] = useState('')
 
-  // Horloge live
   useEffect(() => {
     const maj = () => setHeure(new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))
     maj()
@@ -72,7 +71,6 @@ export default function PageAccueilEmploye() {
 
   return (
     <div className="min-h-full" style={{ backgroundColor: 'var(--pp-page-bg)' }}>
-      {/* Header */}
       <header
         className="sticky top-0 z-20 px-4 pt-10 pb-4 flex items-center justify-between"
         style={{ backgroundColor: 'var(--pp-sidebar-bg)', borderBottom: '1px solid var(--pp-sidebar-border)' }}
@@ -89,7 +87,7 @@ export default function PageAccueilEmploye() {
               ? <div className="space-y-1.5"><div className="h-3.5 w-28 rounded animate-pulse" style={{ backgroundColor: 'var(--pp-nav-hover-bg)' }} /><div className="h-3 w-16 rounded animate-pulse" style={{ backgroundColor: 'var(--pp-nav-hover-bg)' }} /></div>
               : <>
                   <p className="text-sm font-semibold" style={{ color: 'var(--pp-text-primary)' }}>
-                    Bonjour 👋 {prenom}
+                    Bonjour {prenom}
                   </p>
                   <p className="text-xs" style={{ color: 'var(--pp-text-muted)' }}>Employé</p>
                 </>
@@ -111,12 +109,10 @@ export default function PageAccueilEmploye() {
       </header>
 
       <div className="px-4 pt-5 pb-8 space-y-4 max-w-lg mx-auto">
-        {/* Carte statut + horloge */}
         <div
           className="rounded-2xl border p-5"
           style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}
         >
-          {/* Pill statut */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium"
               style={{
@@ -133,7 +129,6 @@ export default function PageAccueilEmploye() {
             )}
           </div>
 
-          {/* Horloge */}
           <p
             className="text-[44px] font-bold leading-none tabular-nums"
             style={{ color: 'var(--pp-text-primary)', fontFamily: 'var(--font-mono)' }}
@@ -144,7 +139,6 @@ export default function PageAccueilEmploye() {
             {deja ? 'Entrée' : 'Prêt à pointer'}
           </p>
 
-          {/* Localisation */}
           <div className="flex items-center gap-1.5 mt-3">
             <MapPin size={12} strokeWidth={2} style={{ color: 'var(--pp-text-muted)' }} />
             <span className="text-xs" style={{ color: 'var(--pp-text-muted)' }}>
@@ -153,7 +147,6 @@ export default function PageAccueilEmploye() {
           </div>
         </div>
 
-        {/* Feedback */}
         {message && (
           <div
             className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm"
@@ -168,7 +161,6 @@ export default function PageAccueilEmploye() {
           </div>
         )}
 
-        {/* Boutons de pointage */}
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => pointer('entree')}
@@ -191,7 +183,6 @@ export default function PageAccueilEmploye() {
           </button>
         </div>
 
-        {/* Scanner QR */}
         <a
           href="/employe/scanner"
           className="rounded-2xl border p-4 flex items-center gap-4"
@@ -214,7 +205,6 @@ export default function PageAccueilEmploye() {
           <ChevronRight size={16} strokeWidth={2} style={{ color: 'var(--pp-text-muted)' }} />
         </a>
 
-        {/* Mes demandes de congé */}
         <div
           className="rounded-2xl border p-4"
           style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}
