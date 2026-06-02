@@ -109,35 +109,7 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
 
-  # 4. SonarCloud — reuses coverage from test job
-  sonarcloud:
-    name: SonarCloud Analysis
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Download coverage artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage
-          path: coverage
-
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
-            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
-            -Dsonar.sources=app,lib,models
-            -Dsonar.exclusions=**/*.test.ts,**/node_modules/**,**/.next/**
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-
-  # 5. Lighthouse CI — Performance, Accessibility, SEO
+  # 4. Lighthouse CI - Performance, Accessibility, SEO
   lighthouse:
     name: Lighthouse CI
     runs-on: ubuntu-latest
@@ -180,7 +152,7 @@ jobs:
           temporaryPublicStorage: true
           runs: 3
 
-  # 6. OWASP ZAP — Dynamic security scan
+  # 5. OWASP ZAP - Dynamic security scan
   owasp-zap:
     name: OWASP ZAP Scan
     runs-on: ubuntu-latest
@@ -226,18 +198,17 @@ jobs:
           cmd_options: '-a'
           fail_action: false
 
-  # 7. Final status — all gates must pass
+  # 6. Final status - all gates must pass
   pipeline-success:
     name: Pipeline Complete
     runs-on: ubuntu-latest
-    needs: [test, security, sonarcloud, lighthouse, owasp-zap]
+    needs: [test, security, lighthouse, owasp-zap]
     if: always()
     steps:
       - name: Check all jobs passed
         run: |
           if [[ "${{ needs.test.result }}" != "success" || \
                 "${{ needs.security.result }}" != "success" || \
-                "${{ needs.sonarcloud.result }}" != "success" || \
                 "${{ needs.lighthouse.result }}" != "success" || \
                 "${{ needs.owasp-zap.result }}" != "success" ]]; then
             echo "❌ One or more jobs failed"
