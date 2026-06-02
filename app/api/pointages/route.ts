@@ -4,6 +4,7 @@ import { connectDB } from '@/lib/mongodb'
 import { verifyToken } from '@/lib/auth'
 import QRToken from '@/models/QRToken'
 import Pointage from '@/models/Pointage'
+import User from '@/models/User'
 
 type PointageType = 'entree' | 'sortie'
 
@@ -54,13 +55,56 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, message: 'Non authentifié' }, { status: 401 })
   }
 
-  const limiteParam = req.nextUrl.searchParams.get('limite')
-  const limite = Math.min(Math.max(Number(limiteParam) || 50, 1), 100)
-  const filtre = user.role === 'admin' ? {} : { user_id: user.id }
+  const params = req.nextUrl.searchParams
+  const limiteParam = params.get('limite')
+  const limite = Math.min(Math.max(Number(limiteParam) || 50, 1), 500)
+  const filtre: Record<string, unknown> = user.role === 'admin' ? {} : { user_id: user.id }
 
-  const pointages = await Pointage.find(filtre)
+  if (user.role === 'admin') {
+    const userId = params.get('userId')
+    const type = params.get('type')
+    const valide = params.get('valide')
+    const dateDebut = params.get('dateDebut')
+    const dateFin = params.get('dateFin')
+    const recherche = params.get('recherche')?.trim()
+
+    if (userId) filtre.user_id = userId
+    if (type === 'entree' || type === 'sortie') filtre.type = type
+    if (valide === 'true' || valide === 'false') filtre.valide = valide === 'true'
+    if (dateDebut || dateFin) {
+      filtre.date = {
+        ...(dateDebut ? { $gte: dateDebut } : {}),
+        ...(dateFin ? { $lte: dateFin } : {}),
+      }
+    }
+    if (recherche) {
+      const utilisateurs = await User.find(
+        {
+          $or: [
+            { nom: { $regex: recherche, $options: 'i' } },
+            { prenom: { $regex: recherche, $options: 'i' } },
+            { email: { $regex: recherche, $options: 'i' } },
+            { departement: { $regex: recherche, $options: 'i' } },
+          ],
+        },
+        { _id: 1 }
+      )
+      const ids = utilisateurs.map(u => u._id)
+      filtre.user_id = userId
+        ? { $in: ids.filter(id => id.toString() === userId) }
+        : { $in: ids }
+    }
+  }
+
+  const requete = Pointage.find(filtre)
     .sort({ createdAt: -1 })
     .limit(limite)
+
+  if (user.role === 'admin') {
+    requete.populate('user_id', 'nom prenom email departement role statut')
+  }
+
+  const pointages = await requete
 
   return NextResponse.json({ success: true, data: pointages })
 }
