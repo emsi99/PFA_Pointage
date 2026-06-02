@@ -3,11 +3,9 @@
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Users, Clock, Calendar,
-  AlertTriangle, FileText, QrCode, Settings, LogOut,
+  AlertTriangle, FileText, QrCode,
 } from 'lucide-react'
 import Logo from '@/components/Logo'
-import ThemeToggle from '@/components/ThemeToggle'
-import { logout } from '@/lib/auth-client'
 import { cn } from '@/lib/utils'
 
 const itemsNav = [
@@ -17,8 +15,7 @@ const itemsNav = [
   { label: 'Congés',     href: '/admin/conges',     icone: Calendar        },
   { label: 'Anomalies',  href: '/admin/anomalies',  icone: AlertTriangle   },
   { label: 'Rapports',   href: '/admin/rapports',   icone: FileText        },
-  { label: 'QR Code',    href: '/admin/qrcode',     icone: QrCode          },
-  { label: 'Paramètres', href: '/admin/parametres', icone: Settings        },
+  { label: 'QR Code',    href: '/admin/qr-display',     icone: QrCode          },
 ]
 
 interface Props {
@@ -27,11 +24,6 @@ interface Props {
 
 export default function AdminSidebar({ nomUtilisateur }: Props) {
   const pathname = usePathname()
-
-  const deconnecter = async () => {
-    await logout()
-    window.location.replace('/login')
-  }
 
   const initiale = nomUtilisateur?.[0]?.toUpperCase() ?? 'A'
 
@@ -96,8 +88,11 @@ export default function AdminSidebar({ nomUtilisateur }: Props) {
         className="px-3 py-4 border-t space-y-1"
         style={{ borderColor: 'var(--pp-sidebar-border)' }}
       >
-        {/* Avatar utilisateur */}
-        <div className="flex items-center gap-3 px-3 py-2 mb-1">
+        {/* Avatar utilisateur (Lien vers profil) */}
+        <a 
+          href="/admin/profil"
+          className="flex items-center gap-3 px-3 py-2 mb-1 rounded-xl transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+        >
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
             style={{ backgroundColor: 'var(--pp-accent)' }}
@@ -115,20 +110,7 @@ export default function AdminSidebar({ nomUtilisateur }: Props) {
               Administrateur
             </p>
           </div>
-        </div>
-
-        <ThemeToggle />
-
-        <button
-          onClick={deconnecter}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full text-left"
-          style={{ color: 'var(--pp-nav-fg)' }}
-          onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--pp-nav-hover-bg)' }}
-          onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
-        >
-          <LogOut size={16} strokeWidth={2} />
-          Déconnexion
-        </button>
+        </a>
       </div>
     </aside>
   )

@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { Home, Clock, QrCode, Calendar, User, Sun, Moon, LogOut } from 'lucide-react'
 import { useTheme } from '@/lib/theme-context'
-import { getUser, logout } from '@/lib/auth-client'
+import { getUser, logout, type Utilisateur } from '@/lib/auth-client'
 import Logo from '@/components/Logo'
 import { cn } from '@/lib/utils'
+import EmployeHeader from '@/components/layout/EmployeHeader'
 
 const itemsNav = [
   { label: 'Accueil',    href: '/employe/pointage',  icone: Home,     central: false },
@@ -16,7 +17,7 @@ const itemsNav = [
   { label: 'Profil',     href: '/employe/profil',     icone: User,     central: false },
 ]
 
-function EmployeSidebar({ activePath, nomUtilisateur }: { activePath: string; nomUtilisateur?: string }) {
+function EmployeSidebar({ activePath, nomUtilisateur, initiale }: { activePath: string; nomUtilisateur?: string; initiale?: string }) {
   const { theme, toggleTheme } = useTheme()
 
   const deconnecter = async () => {
@@ -26,63 +27,70 @@ function EmployeSidebar({ activePath, nomUtilisateur }: { activePath: string; no
 
   return (
     <aside
-      className="w-56 flex flex-col fixed h-full z-10 border-r"
+      className="w-60 flex flex-col fixed h-full z-10 border-r"
       style={{ backgroundColor: 'var(--pp-sidebar-bg)', borderColor: 'var(--pp-sidebar-border)' }}
     >
-      <div className="px-5 py-5 border-b" style={{ borderColor: 'var(--pp-sidebar-border)' }}>
+      <div className="px-6 py-6 border-b" style={{ borderColor: 'var(--pp-sidebar-border)' }}>
         <Logo />
-        {nomUtilisateur && (
-          <p className="text-xs mt-2 truncate" style={{ color: 'var(--pp-text-muted)' }}>
-            {nomUtilisateur}
-          </p>
-        )}
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
         {itemsNav.map(item => {
           const actif = activePath === item.href || activePath.startsWith(item.href + '/')
           return (
             <a
               key={item.href}
               href={item.href}
-              className="relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm"
+              className="relative flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition-all"
               style={{
                 backgroundColor: actif ? 'var(--pp-nav-active-bg)' : 'transparent',
                 color: actif ? 'var(--pp-nav-active-fg)' : 'var(--pp-nav-fg)',
-                fontWeight: actif ? 500 : 400,
+                fontWeight: actif ? 600 : 400,
               }}
               onMouseEnter={e => { if (!actif) e.currentTarget.style.backgroundColor = 'var(--pp-nav-hover-bg)' }}
               onMouseLeave={e => { if (!actif) e.currentTarget.style.backgroundColor = 'transparent' }}
             >
-              {actif && (
-                <div className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r-full" style={{ backgroundColor: 'var(--pp-accent)' }} />
-              )}
-              <item.icone size={16} strokeWidth={2} />
+              <item.icone size={18} strokeWidth={actif ? 2.5 : 2} />
               {item.label}
             </a>
           )
         })}
       </nav>
 
-      <div className="px-3 py-4 border-t space-y-1" style={{ borderColor: 'var(--pp-sidebar-border)' }}>
+      <div className="px-4 py-4 border-t space-y-1" style={{ borderColor: 'var(--pp-sidebar-border)' }}>
+        {/* User Info */}
+        <div className="flex items-center gap-3 px-3 py-2 mb-2">
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+            style={{ backgroundColor: 'var(--pp-accent)' }}
+          >
+            {initiale}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold truncate" style={{ color: 'var(--pp-text-primary)' }}>
+              {nomUtilisateur || 'Employé'}
+            </p>
+            <p className="text-[10px] uppercase tracking-wider font-bold" style={{ color: 'var(--pp-text-muted)' }}>
+              Session
+            </p>
+          </div>
+        </div>
+
         <button
           onClick={toggleTheme}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full text-left"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm w-full text-left transition-colors"
           style={{ color: 'var(--pp-nav-fg)' }}
           onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--pp-nav-hover-bg)' }}
           onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
         >
-          {theme === 'light' ? <Moon size={16} strokeWidth={2} /> : <Sun size={16} strokeWidth={2} />}
+          {theme === 'light' ? <Moon size={18} strokeWidth={2} /> : <Sun size={18} strokeWidth={2} />}
           {theme === 'light' ? 'Mode sombre' : 'Mode clair'}
         </button>
         <button
           onClick={deconnecter}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full text-left"
-          style={{ color: 'var(--pp-nav-fg)' }}
-          onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--pp-nav-hover-bg)' }}
-          onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm w-full text-left transition-colors text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20"
         >
-          <LogOut size={16} strokeWidth={2} />
+          <LogOut size={18} strokeWidth={2} />
           Déconnexion
         </button>
       </div>
@@ -92,60 +100,72 @@ function EmployeSidebar({ activePath, nomUtilisateur }: { activePath: string; no
 
 export default function EmployeLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const [nomUtilisateur, setNomUtilisateur] = useState<string | undefined>()
+  const [user, setUser] = useState<Utilisateur | null>(null)
+  const [chargement, setChargement] = useState(true)
 
   useEffect(() => {
-    getUser().then(u => { if (u) setNomUtilisateur(u.prenom ?? u.nom) })
+    getUser().then(u => { 
+      if (u) setUser(u)
+      setChargement(false)
+    })
   }, [])
+
+  const nomUtilisateur = user ? (user.prenom || user.nom) : undefined
+  const initiale = user ? (user.prenom?.[0] || user.nom?.[0] || 'E').toUpperCase() : 'E'
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ backgroundColor: 'var(--pp-page-bg)' }}>
       {/* Sidebar desktop */}
-      <div className="hidden md:block w-56 shrink-0">
-        <EmployeSidebar activePath={pathname} nomUtilisateur={nomUtilisateur} />
+      <div className="hidden md:block w-60 shrink-0">
+        <EmployeSidebar activePath={pathname} nomUtilisateur={nomUtilisateur} initiale={initiale} />
       </div>
 
       {/* Contenu */}
-      <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
-        {children}
-      </main>
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Header mobile */}
+        <EmployeHeader nomUtilisateur={nomUtilisateur} initiale={initiale} chargement={chargement} />
+        
+        <main className="flex-1 overflow-y-auto pb-24 md:pb-6">
+          {children}
+        </main>
+      </div>
 
       {/* Bottom nav mobile */}
       <nav
         className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t"
-        style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}
+        style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)', boxShadow: '0 -4px 20px rgba(0,0,0,0.03)' }}
       >
-        <div className="flex items-end justify-around px-2 pt-2 pb-3">
+        <div className="flex items-end justify-around px-2 pt-2 pb-5">
           {itemsNav.map(item => {
             const actif = pathname === item.href || pathname.startsWith(item.href + '/')
             if (item.central) {
               return (
-                <a key={item.href} href={item.href} className="flex flex-col items-center gap-1 -mt-5">
+                <a key={item.href} href={item.href} className="flex flex-col items-center gap-1 -mt-8 transition-transform active:scale-90">
                   <div
-                    className="w-14 h-14 rounded-full flex items-center justify-center border-4"
+                    className="w-16 h-16 rounded-3xl flex items-center justify-center border-[6px]"
                     style={{
                       backgroundColor: 'var(--pp-accent)',
-                      borderColor: 'var(--pp-card-bg)',
-                      boxShadow: 'var(--shadow-fab)',
+                      borderColor: 'var(--pp-page-bg)',
+                      boxShadow: '0 8px 25px -5px var(--pp-accent)',
                     }}
                   >
-                    <item.icone size={22} className="text-white" strokeWidth={2} />
+                    <item.icone size={28} className="text-white" strokeWidth={2.5} />
                   </div>
-                  <span className="text-[10px] font-medium" style={{ color: 'var(--pp-accent)' }}>
+                  <span className="text-[10px] font-black uppercase tracking-tighter" style={{ color: 'var(--pp-accent)' }}>
                     {item.label}
                   </span>
                 </a>
               )
             }
             return (
-              <a key={item.href} href={item.href} className="flex flex-col items-center gap-1 px-3 py-1">
+              <a key={item.href} href={item.href} className="flex flex-col items-center gap-1.5 px-3 py-1 transition-all active:scale-90">
                 <item.icone
-                  size={20}
-                  strokeWidth={2}
+                  size={22}
+                  strokeWidth={actif ? 2.5 : 2}
                   style={{ color: actif ? 'var(--pp-accent)' : 'var(--pp-text-muted)' }}
                 />
                 <span
-                  className={cn('text-[10px]', actif ? 'font-semibold' : 'font-normal')}
+                  className={cn('text-[10px] font-bold uppercase tracking-tighter', actif ? '' : 'opacity-70')}
                   style={{ color: actif ? 'var(--pp-accent)' : 'var(--pp-text-muted)' }}
                 >
                   {item.label}

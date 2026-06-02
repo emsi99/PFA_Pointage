@@ -12,7 +12,7 @@ const itemsMobileNav = [
   { label: 'Employés',  href: '/admin/employes',  icone: Users           },
   { label: 'Pointages', href: '/admin/pointages', icone: Clock           },
   { label: 'Congés',    href: '/admin/conges',    icone: Calendar        },
-  { label: 'QR Code',   href: '/admin/qrcode',   icone: QrCode          },
+  { label: 'QR Code',   href: '/admin/qr-display', icone: QrCode        },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

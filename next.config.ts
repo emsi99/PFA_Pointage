@@ -1,6 +1,12 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
+
+  allowedDevOrigins: [
+    'prolonged-perjury-unlivable.ngrok-free.dev',
+  ],
+
   async redirects() {
     return [
       {

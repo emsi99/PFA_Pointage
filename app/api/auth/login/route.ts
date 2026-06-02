@@ -7,7 +7,17 @@ import User from '@/models/User'
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json()
+    let body
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json(
+        { success: false, message: 'Corps de requête JSON invalide' },
+        { status: 400 }
+      )
+    }
+
+    const { email, password } = body
 
     if (!email || !password) {
       return NextResponse.json(
@@ -23,6 +33,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, message: 'Email ou mot de passe incorrect' },
         { status: 401 }
+      )
+    }
+
+    if (!utilisateur.password) {
+      console.error('Password field missing for user:', email)
+      return NextResponse.json(
+        { success: false, message: 'Erreur de base de données : mot de passe manquant' },
+        { status: 500 }
       )
     }
 
@@ -61,9 +79,11 @@ export async function POST(request: NextRequest) {
         role: utilisateur.role,
       },
     })
-  } catch {
+  } catch (error: unknown) {
+    console.error('Login error details:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { success: false, message: 'Erreur serveur' },
+      { success: false, message: `Erreur serveur: ${message}` },
       { status: 500 }
     )
   }

@@ -1,16 +1,17 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Users, UserCheck, Clock, UserX, Timer,
-  Bell, ChevronDown, TrendingUp, TrendingDown,
-  ArrowRight, AlertTriangle, LogOut as LogOutIcon,
+  TrendingUp, TrendingDown,
+  ArrowRight, AlertTriangle
 } from 'lucide-react'
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
 } from 'recharts'
 import { getUser, type Utilisateur } from '@/lib/auth-client'
+import AdminHeader from '@/components/layout/AdminHeader'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -111,21 +112,22 @@ export default function PageDashboard() {
   const [stats, setStats] = useState<StatsDashboard | null>(null)
   const [chargement, setChargement] = useState(true)
 
-  const charger = useCallback(async () => {
-    setChargement(true)
-    try {
-      const [user, resStats] = await Promise.all([
-        getUser(),
-        fetch('/api/stats'),
-      ])
-      setUtilisateur(user)
-      const d = await resStats.json()
-      if (d.success) setStats(d.data)
-    } catch { /* ignore */ }
-    finally { setChargement(false) }
+  useEffect(() => {
+    const charger = async () => {
+      setChargement(true)
+      try {
+        const [user, resStats] = await Promise.all([
+          getUser(),
+          fetch('/api/stats'),
+        ])
+        setUtilisateur(user)
+        const d = await resStats.json()
+        if (d.success) setStats(d.data)
+      } catch { /* ignore */ }
+      finally { setChargement(false) }
+    }
+    charger()
   }, [])
-
-  useEffect(() => { charger() }, [charger])
 
   const taux = stats?.tauxPresence ?? 79
   const total = stats?.totalEmployes ?? 124
@@ -136,40 +138,10 @@ export default function PageDashboard() {
 
   return (
     <div className="min-h-full" style={{ backgroundColor: 'var(--pp-page-bg)' }}>
-      {/* Topbar */}
-      <header
-        className="sticky top-0 z-20 px-6 py-4 border-b flex items-center justify-between gap-4"
-        style={{ backgroundColor: 'var(--pp-card-bg)', borderColor: 'var(--pp-card-border)' }}
-      >
-        <div>
-          <h1 className="text-base font-semibold" style={{ color: 'var(--pp-text-primary)' }}>
-            Tableau de bord
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--pp-text-muted)' }}>
-            {chargement ? '—' : `Bonjour, ${utilisateur?.nom ?? 'Admin'} 👋`}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 ml-auto">
-          <button
-            className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border"
-            style={{ borderColor: 'var(--pp-card-border)', color: 'var(--pp-text-secondary)', backgroundColor: 'var(--pp-card-bg)' }}
-          >
-            22 Avril 2026 <ChevronDown size={13} />
-          </button>
-          <button
-            className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border"
-            style={{ borderColor: 'var(--pp-card-border)', color: 'var(--pp-text-secondary)', backgroundColor: 'var(--pp-card-bg)' }}
-          >
-            Tous les départements <ChevronDown size={13} />
-          </button>
-          <button className="relative w-9 h-9 rounded-lg border flex items-center justify-center"
-            style={{ borderColor: 'var(--pp-card-border)', backgroundColor: 'var(--pp-card-bg)', color: 'var(--pp-text-secondary)' }}
-          >
-            <Bell size={16} strokeWidth={2} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500" />
-          </button>
-        </div>
-      </header>
+      <AdminHeader 
+        title="Tableau de bord"
+        subtitle={chargement ? 'Chargement...' : `Bonjour, ${utilisateur?.nom ?? 'Admin'} 👋`}
+      />
 
       <div className="px-6 py-6 space-y-6">
         {/* 5 cartes stat */}
@@ -408,7 +380,7 @@ export default function PageDashboard() {
                             </span>
                           </td>
                           <td className="px-5 py-3.5 text-sm" style={{ color: 'var(--pp-text-secondary)' }}>
-                            Bamako, Mali
+                            Casablanca, Maroc
                           </td>
                           <td className="px-5 py-3.5">
                             <span className="text-xs font-medium px-2 py-1 rounded-full"
