@@ -239,7 +239,10 @@ export default function PageAdminConges() {
     finally { setChargement(false) }
   }, [])
 
-  useEffect(() => { charger() }, [charger])
+  useEffect(() => {
+    const t = window.setTimeout(() => charger(), 0)
+    return () => window.clearTimeout(t)
+  }, [charger])
 
   const afficherToast = (message: string, ok: boolean) => {
     setToast({ message, ok })

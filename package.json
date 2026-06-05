@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint .",
     "test": "jest --watchAll=false",
     "test:coverage": "jest --coverage --watchAll=false --coverageReporters=lcov"
   },

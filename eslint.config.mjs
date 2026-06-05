@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // k6 performance-test scripts use anonymous default exports by design
+    "k6/**",
   ]),
 ]);
 

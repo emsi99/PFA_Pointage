@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Clock, MapPin, CheckCircle, AlertCircle, QrCode, Calendar, ChevronRight, Bell, X } from 'lucide-react'
-import { getUser, type Utilisateur } from '@/lib/auth-client'
+import { getUser } from '@/lib/auth-client'
 
 interface DernierPointage { type: 'entree' | 'sortie'; heure: string }
 
@@ -24,9 +24,8 @@ interface NotificationData {
 
 export default function PageAccueilEmploye() {
   const router = useRouter()
-  const [utilisateur, setUtilisateur] = useState<Utilisateur | null>(null)
   const [dernierPointage, setDernierPointage] = useState<DernierPointage | null>(null)
-  const [message, setMessage] = useState<{ ok: boolean; texte: string } | null>(null)
+  const [message] = useState<{ ok: boolean; texte: string } | null>(null)
   const [heure, setHeure] = useState('')
   const [notification, setNotification] = useState<NotificationData | null>(null)
 
@@ -62,7 +61,6 @@ export default function PageAccueilEmploye() {
       try {
         const [user, resP] = await Promise.all([getUser(), fetch('/api/pointages?limite=1')])
         if (!user) { window.location.replace('/login'); return }
-        setUtilisateur(user)
         const d = await resP.json()
         if (d.success && d.data.length) setDernierPointage({ type: d.data[0].type, heure: d.data[0].heure })
       } catch { /* ignore */ }
@@ -71,7 +69,6 @@ export default function PageAccueilEmploye() {
   }, [])
 
   const deja = dernierPointage?.type === 'entree'
-  const prenom = utilisateur?.prenom ?? utilisateur?.nom ?? 'vous'
   const dateAujourdhui = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (

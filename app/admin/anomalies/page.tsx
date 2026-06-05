@@ -57,7 +57,10 @@ export default function PageAnomalies() {
     }
   }, [periode])
 
-  useEffect(() => { charger() }, [charger])
+  useEffect(() => {
+    const t = window.setTimeout(() => charger(), 0)
+    return () => window.clearTimeout(t)
+  }, [charger])
 
   // Client-side filter by type
   const anomalies = typeFiltre
