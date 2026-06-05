@@ -9,6 +9,7 @@ export interface IConge extends Document {
   statut: 'en_attente' | 'valide' | 'refuse'
   validePar?: mongoose.Types.ObjectId
   dateValidation?: Date
+  commentaire?: string
 }
 
 const CongeSchema = new Schema<IConge>({
@@ -20,6 +21,7 @@ const CongeSchema = new Schema<IConge>({
   statut:         { type: String, enum: ['en_attente', 'valide', 'refuse'], default: 'en_attente' },
   validePar:      { type: Schema.Types.ObjectId, ref: 'User' },
   dateValidation: { type: Date },
+  commentaire:    { type: String },
 }, { timestamps: true })
 
 export default mongoose.models.Conge || mongoose.model<IConge>('Conge', CongeSchema)

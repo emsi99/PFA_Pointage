@@ -20,38 +20,25 @@ interface StatsDashboard {
   employesActifs: number
   admins: number
   tauxPresence: number
+  presents: number
+  absents: number
+  retards: number
+  sortieAnticipee: number
+  heuresInsuffisantes: number
+  heures_semaine: string
+  evolution_semaine: { jour: string; presents: number; absents: number }[]
+  repartition_types: { name: string; value: number }[]
+  heures_par_jour: { jour: string; heures: number }[]
   activiteRecente: { type: string; description: string; heure: string }[]
 }
 
-// ─── Données graphiques (démo visuelle) ──────────────────────────────────────
+// ─── Couleurs fixes du donut ──────────────────────────────────────────────────
 
-const donneesDonut = (tauxPresence: number, total: number) => {
-  const presents  = Math.round((tauxPresence / 100) * total)
-  const absents   = Math.round((total - presents) * 0.54)
-  const retards   = total - presents - absents
-  return [
-    { nom: 'Présents', valeur: presents,  couleur: '#16a34a' },
-    { nom: 'Absents',  valeur: absents,   couleur: '#ef4444' },
-    { nom: 'Retards',  valeur: retards,   couleur: '#f59e0b' },
-  ]
+const DONUT_COULEURS: Record<string, string> = {
+  'Présents': '#16a34a',
+  'Retards':  '#f59e0b',
+  'Absents':  '#ef4444',
 }
-
-const donneesAires = [
-  { jour: '16 Avr', heures: 712 },
-  { jour: '17 Avr', heures: 798 },
-  { jour: '18 Avr', heures: 651 },
-  { jour: '19 Avr', heures: 874 },
-  { jour: '20 Avr', heures: 920 },
-  { jour: '21 Avr', heures: 836 },
-  { jour: '22 Avr', heures: 856 },
-]
-
-const anomalies = [
-  { label: 'Retard',              val: 12, couleur: '#f59e0b' },
-  { label: 'Absence',             val: 14, couleur: '#ef4444' },
-  { label: 'Sortie anticipée',    val: 6,  couleur: '#8b5cf6' },
-  { label: 'Heures insuffisantes',val: 9,  couleur: '#f97316' },
-]
 
 // ─── Composant carte stat ─────────────────────────────────────────────────────
 
@@ -129,12 +116,25 @@ export default function PageDashboard() {
     charger()
   }, [])
 
-  const taux = stats?.tauxPresence ?? 79
-  const total = stats?.totalEmployes ?? 124
-  const presents = Math.round((taux / 100) * total)
-  const retards = Math.round(total * 0.097)
-  const absents = total - presents - retards
-  const donut = donneesDonut(taux, total)
+  const total    = stats?.totalEmployes ?? 0
+  const presents = stats?.presents     ?? 0
+  const retards  = stats?.retards      ?? 0
+  const absents  = stats?.absents      ?? 0
+
+  const donut = (stats?.repartition_types ?? []).map(d => ({
+    nom:    d.name,
+    valeur: d.value,
+    couleur: DONUT_COULEURS[d.name] ?? '#94a3b8',
+  }))
+
+  const donneesAires = stats?.heures_par_jour ?? []
+
+  const anomalies = [
+    { label: 'Retard',               val: stats?.retards             ?? 0, couleur: '#f59e0b' },
+    { label: 'Absence',              val: stats?.absents             ?? 0, couleur: '#ef4444' },
+    { label: 'Sortie anticipée',     val: stats?.sortieAnticipee     ?? 0, couleur: '#8b5cf6' },
+    { label: 'Heures insuffisantes', val: stats?.heuresInsuffisantes ?? 0, couleur: '#f97316' },
+  ]
 
   return (
     <div className="min-h-full" style={{ backgroundColor: 'var(--pp-page-bg)' }}>
@@ -146,11 +146,11 @@ export default function PageDashboard() {
       <div className="px-6 py-6 space-y-6">
         {/* 5 cartes stat */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          <CarteStat titre="Total employés"  valeur={chargement ? '—' : total}             sous="Effectif global"    icone={Users}    couleur="#2563eb"           chargement={chargement} />
-          <CarteStat titre="Présents"        valeur={chargement ? '—' : presents}          sous="Aujourd'hui"        icone={UserCheck} couleur="#16a34a" delta="+79%" deltaPos={true}  chargement={chargement} />
-          <CarteStat titre="Retards"         valeur={chargement ? '—' : retards}           sous="Ce matin"           icone={Clock}    couleur="#f59e0b" delta="↘ 10%" deltaPos={false} chargement={chargement} />
-          <CarteStat titre="Absences"        valeur={chargement ? '—' : absents}           sous="Non justifiées"     icone={UserX}    couleur="#ef4444" delta="↘ 11%" deltaPos={false} chargement={chargement} />
-          <CarteStat titre="Heures totales"  valeur={chargement ? '—' : '856h 30m'}        sous="Cette semaine"      icone={Timer}    couleur="#8b5cf6"           chargement={chargement} />
+          <CarteStat titre="Total employés"  valeur={chargement ? '—' : total}                        sous="Effectif global"  icone={Users}     couleur="#2563eb"                                                             chargement={chargement} />
+          <CarteStat titre="Présents"        valeur={chargement ? '—' : presents}                   sous="Aujourd'hui"      icone={UserCheck} couleur="#16a34a" delta={stats ? `${stats.tauxPresence}%` : undefined} deltaPos={true}  chargement={chargement} />
+          <CarteStat titre="Retards"         valeur={chargement ? '—' : retards}                    sous="Ce matin"         icone={Clock}     couleur="#f59e0b"                                                                       chargement={chargement} />
+          <CarteStat titre="Absences"        valeur={chargement ? '—' : absents}                    sous="Non justifiées"   icone={UserX}     couleur="#ef4444"                                                                       chargement={chargement} />
+          <CarteStat titre="Heures totales"  valeur={chargement ? '—' : (stats?.heures_semaine ?? '0h')} sous="Cette semaine" icone={Timer}   couleur="#8b5cf6"                                                                       chargement={chargement} />
         </div>
 
         {/* Ligne centrale : Donut + Graphe aires */}
@@ -194,7 +194,7 @@ export default function PageDashboard() {
               {/* Centre */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <p className="text-[30px] font-bold leading-none" style={{ color: 'var(--pp-text-primary)', fontFamily: 'var(--font-mono)' }}>
-                  {taux}%
+                  {chargement ? '—' : `${stats?.tauxPresence ?? 0}%`}
                 </p>
                 <p className="text-[10px] mt-1" style={{ color: 'var(--pp-text-muted)' }}>Présence</p>
               </div>
@@ -228,7 +228,7 @@ export default function PageDashboard() {
                 <p className="text-xs mt-0.5" style={{ color: 'var(--pp-text-muted)' }}>7 derniers jours</p>
               </div>
               <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--pp-text-primary)', fontFamily: 'var(--font-mono)' }}>
-                856h
+                {chargement ? '—' : (stats?.heures_semaine ?? '0h')}
               </p>
             </div>
             <ResponsiveContainer width="100%" height={160}>
@@ -279,34 +279,37 @@ export default function PageDashboard() {
               </h2>
             </div>
             <div className="space-y-3">
-              {anomalies.map(a => (
-                <div key={a.label} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: a.couleur }} />
-                    <span className="text-sm" style={{ color: 'var(--pp-text-secondary)' }}>{a.label}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="h-1.5 rounded-full"
-                      style={{
-                        width: `${Math.max(24, (a.val / 20) * 80)}px`,
-                        backgroundColor: `${a.couleur}40`,
-                      }}
-                    >
-                      <div
-                        className="h-full rounded-full"
-                        style={{ width: '100%', backgroundColor: a.couleur }}
-                      />
+              {(() => {
+                const maxVal = Math.max(1, ...anomalies.map(a => a.val))
+                return anomalies.map(a => (
+                  <div key={a.label} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: a.couleur }} />
+                      <span className="text-sm" style={{ color: 'var(--pp-text-secondary)' }}>{a.label}</span>
                     </div>
-                    <span
-                      className="text-sm font-semibold tabular-nums w-5 text-right"
-                      style={{ color: a.couleur, fontFamily: 'var(--font-mono)' }}
-                    >
-                      {a.val}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="h-1.5 rounded-full"
+                        style={{
+                          width: `${Math.max(16, (a.val / maxVal) * 80)}px`,
+                          backgroundColor: `${a.couleur}40`,
+                        }}
+                      >
+                        <div
+                          className="h-full rounded-full"
+                          style={{ width: '100%', backgroundColor: a.couleur }}
+                        />
+                      </div>
+                      <span
+                        className="text-sm font-semibold tabular-nums w-5 text-right"
+                        style={{ color: a.couleur, fontFamily: 'var(--font-mono)' }}
+                      >
+                        {chargement ? '—' : a.val}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              })()}
             </div>
           </div>
 

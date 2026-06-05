@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Clock, Calendar, QrCode } from 'lucide-react'
+import { LayoutDashboard, Users, Clock, Calendar, AlertTriangle, QrCode } from 'lucide-react'
 import AdminSidebar from '@/components/layout/AdminSidebar'
 import { getUser } from '@/lib/auth-client'
 import { cn } from '@/lib/utils'
@@ -12,6 +12,7 @@ const itemsMobileNav = [
   { label: 'Employés',  href: '/admin/employes',  icone: Users           },
   { label: 'Pointages', href: '/admin/pointages', icone: Clock           },
   { label: 'Congés',    href: '/admin/conges',    icone: Calendar        },
+  { label: 'Anomalies', href: '/admin/anomalies', icone: AlertTriangle   },
   { label: 'QR Code',   href: '/admin/qr-display', icone: QrCode        },
 ]
 

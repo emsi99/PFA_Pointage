@@ -1,16 +1,54 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Clock, MapPin, CheckCircle, AlertCircle, QrCode, Calendar, ChevronRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Clock, MapPin, CheckCircle, AlertCircle, QrCode, Calendar, ChevronRight, Bell, X } from 'lucide-react'
 import { getUser, type Utilisateur } from '@/lib/auth-client'
 
 interface DernierPointage { type: 'entree' | 'sortie'; heure: string }
 
+interface CongeNotif {
+  _id: string
+  type: 'annuel' | 'maladie' | 'exceptionnel'
+  statut: 'valide' | 'refuse'
+  date_debut: string
+  date_fin: string
+  commentaire?: string
+  dateValidation: string
+}
+
+interface NotificationData {
+  count: number
+  conges: CongeNotif[]
+}
+
 export default function PageAccueilEmploye() {
+  const router = useRouter()
   const [utilisateur, setUtilisateur] = useState<Utilisateur | null>(null)
   const [dernierPointage, setDernierPointage] = useState<DernierPointage | null>(null)
   const [message, setMessage] = useState<{ ok: boolean; texte: string } | null>(null)
   const [heure, setHeure] = useState('')
+  const [notification, setNotification] = useState<NotificationData | null>(null)
+
+  useEffect(() => {
+    const verifierNotifications = async () => {
+      try {
+        const lastVisit = localStorage.getItem('lastVisit')
+        const url = lastVisit
+          ? `/api/conges/notifications?since=${encodeURIComponent(lastVisit)}`
+          : '/api/conges/notifications'
+        const res = await fetch(url)
+        const d = await res.json()
+        if (d.success && d.count > 0) setNotification({ count: d.count, conges: d.conges })
+      } catch { /* ignore */ }
+    }
+    verifierNotifications()
+  }, [])
+
+  const fermerNotification = () => {
+    localStorage.setItem('lastVisit', new Date().toISOString())
+    setNotification(null)
+  }
 
   useEffect(() => {
     const maj = () => setHeure(new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))
@@ -47,6 +85,45 @@ export default function PageAccueilEmploye() {
           {dateAujourdhui.charAt(0).toUpperCase() + dateAujourdhui.slice(1)}
         </p>
       </div>
+
+      {/* Bannière notification congés */}
+      {notification && notification.count > 0 && (
+        <div
+          className="rounded-2xl p-4 flex items-start gap-3"
+          style={{ backgroundColor: '#6366f10e', border: '1px solid #6366f140' }}
+        >
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+            style={{ backgroundColor: '#6366f118', color: '#6366f1' }}
+          >
+            <Bell size={17} strokeWidth={2} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold" style={{ color: 'var(--pp-text-primary)' }}>
+              {notification.count} réponse{notification.count > 1 ? 's' : ''} à vos demandes de congé
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--pp-text-muted)' }}>
+              Un administrateur a traité vos demandes
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => { fermerNotification(); router.push('/employe/conges/historique') }}
+              className="text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-opacity hover:opacity-80"
+              style={{ backgroundColor: '#6366f1' }}
+            >
+              Voir
+            </button>
+            <button
+              onClick={fermerNotification}
+              className="p-1.5 rounded-lg transition-colors"
+              style={{ color: 'var(--pp-text-muted)' }}
+            >
+              <X size={14} strokeWidth={2} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Status Card */}
       <div

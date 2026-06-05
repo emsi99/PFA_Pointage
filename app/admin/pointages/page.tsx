@@ -4,8 +4,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   CalendarDays, CheckCircle, ChevronLeft, ChevronRight, Clock,
   FilterX, Search, Timer, UserCheck, XCircle,
+  FileSpreadsheet, FileText,
 } from 'lucide-react'
 import AdminHeader from '@/components/layout/AdminHeader'
+import { exportExcel, exportPDF, type PointageExport } from '@/lib/export'
 
 interface Employe {
   _id: string
@@ -161,11 +163,60 @@ export default function PagePointagesAdmin() {
     setPage(1)
   }
 
+  const nomFichier = `pointages-${new Date().toISOString().split('T')[0]}`
+
+  const donneesExport = (): PointageExport[] =>
+    pointages.map(p => {
+      const user = getUtilisateur(p)
+      return {
+        nom:      user?.nom    ?? 'Inconnu',
+        prenom:   user?.prenom ?? '',
+        date:     new Date(`${p.date}T00:00:00`).toLocaleDateString('fr-FR'),
+        heure:    p.heure,
+        type:     p.type,
+        valide:   p.valide,
+        anomalie: p.anomalie,
+      }
+    })
+
+  const btnExportCls = 'flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors disabled:opacity-40 disabled:cursor-not-allowed'
+  const btnExportStyle = {
+    borderColor:     'var(--pp-card-border)',
+    color:           'var(--pp-text-secondary)',
+    backgroundColor: 'var(--pp-card-bg)',
+  }
+
+  const botonesExport = (
+    <div className="flex items-center gap-2">
+      <button
+        onClick={() => exportExcel(donneesExport(), nomFichier)}
+        disabled={chargement || pointages.length === 0}
+        className={btnExportCls}
+        style={btnExportStyle}
+        title="Exporter en Excel"
+      >
+        <FileSpreadsheet size={14} strokeWidth={2} />
+        Excel
+      </button>
+      <button
+        onClick={() => exportPDF(donneesExport(), nomFichier)}
+        disabled={chargement || pointages.length === 0}
+        className={btnExportCls}
+        style={btnExportStyle}
+        title="Exporter en PDF"
+      >
+        <FileText size={14} strokeWidth={2} />
+        PDF
+      </button>
+    </div>
+  )
+
   return (
     <div className="min-h-full" style={{ backgroundColor: 'var(--pp-page-bg)' }}>
       <AdminHeader
         title="Pointages"
         subtitle={chargement ? 'Chargement...' : `${stats.total} pointages trouves`}
+        rightElement={botonesExport}
       />
 
       <div className="px-6 py-6 space-y-5">
