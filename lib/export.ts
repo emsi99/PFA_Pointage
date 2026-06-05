@@ -150,3 +150,174 @@ export function exportAnomaliesExcel(data: AnomalieExport[], filename: string): 
   XLSX.utils.book_append_sheet(wb, ws, 'Anomalies')
   XLSX.writeFile(wb, `${filename}.xlsx`)
 }
+
+// ── Rapport de présence ───────────────────────────────────────────────────────
+
+export interface PresenceRapport {
+  nom: string
+  prenom: string
+  joursPresents: number
+  joursAbsents: number
+  retards: number
+  tauxPresence: string
+}
+
+export function exportPresenceExcel(data: PresenceRapport[], filename: string): void {
+  const lignes = data.map(p => ({
+    'Nom':             p.nom,
+    'Prénom':          p.prenom,
+    'Jours présents':  p.joursPresents,
+    'Jours absents':   p.joursAbsents,
+    'Retards':         p.retards,
+    'Taux présence':   p.tauxPresence,
+  }))
+
+  const ws = XLSX.utils.json_to_sheet(lignes)
+  ws['!cols'] = [
+    { wch: 16 },
+    { wch: 16 },
+    { wch: 15 },
+    { wch: 14 },
+    { wch: 10 },
+    { wch: 14 },
+  ]
+
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Présence')
+  XLSX.writeFile(wb, `${filename}.xlsx`)
+}
+
+export function exportPresencePDF(data: PresenceRapport[], filename: string): void {
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
+
+  const dateGen = new Date().toLocaleDateString('fr-FR', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  })
+
+  doc.setFontSize(20)
+  doc.setTextColor(15, 23, 41)
+  doc.text('Rapport de Présence', 14, 18)
+
+  doc.setFontSize(9)
+  doc.setTextColor(100, 116, 139)
+  doc.text(`Généré le ${dateGen}`, 14, 25)
+  doc.text(
+    `${data.length} employé${data.length > 1 ? 's' : ''}`,
+    doc.internal.pageSize.getWidth() - 14,
+    25,
+    { align: 'right' }
+  )
+
+  autoTable(doc, {
+    startY: 30,
+    head: [['Nom', 'Prénom', 'Jours présents', 'Jours absents', 'Retards', 'Taux présence']],
+    body: data.map(p => [p.nom, p.prenom, p.joursPresents, p.joursAbsents, p.retards, p.tauxPresence]),
+    headStyles: { fillColor: [99, 102, 241], textColor: 255, fontStyle: 'bold', fontSize: 9, halign: 'left' },
+    bodyStyles: { fontSize: 8, textColor: [30, 41, 59], cellPadding: 3 },
+    alternateRowStyles: { fillColor: [245, 247, 250] },
+    columnStyles: {
+      2: { halign: 'center' },
+      3: { halign: 'center' },
+      4: { halign: 'center' },
+      5: { halign: 'center' },
+    },
+    margin: { left: 14, right: 14 },
+    didDrawPage: (hookData) => {
+      const pageCount = (doc.internal as unknown as { getNumberOfPages: () => number }).getNumberOfPages()
+      doc.setFontSize(8)
+      doc.setTextColor(148, 163, 184)
+      doc.text(
+        `Page ${hookData.pageNumber} / ${pageCount}`,
+        doc.internal.pageSize.getWidth() / 2,
+        doc.internal.pageSize.getHeight() - 8,
+        { align: 'center' }
+      )
+    },
+  })
+
+  doc.save(`${filename}.pdf`)
+}
+
+// ── Rapport de congés ─────────────────────────────────────────────────────────
+
+export interface CongeRapport {
+  nom: string
+  prenom: string
+  matricule: string
+  type: string
+  dateDebut: string
+  dateFin: string
+  duree: number
+  statut: string
+}
+
+export function exportCongesExcel(data: CongeRapport[], filename: string): void {
+  const lignes = data.map(c => ({
+    'Nom':        c.nom,
+    'Prénom':     c.prenom,
+    'Matricule':  c.matricule,
+    'Type':       c.type,
+    'Date début': c.dateDebut,
+    'Date fin':   c.dateFin,
+    'Durée (j)':  c.duree,
+    'Statut':     c.statut,
+  }))
+
+  const ws = XLSX.utils.json_to_sheet(lignes)
+  ws['!cols'] = [
+    { wch: 16 },
+    { wch: 16 },
+    { wch: 12 },
+    { wch: 20 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 10 },
+    { wch: 14 },
+  ]
+
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Congés')
+  XLSX.writeFile(wb, `${filename}.xlsx`)
+}
+
+// ── Rapport d'anomalies résumé ────────────────────────────────────────────────
+
+export interface AnomalieRapport {
+  nom: string
+  prenom: string
+  matricule: string
+  retards: number
+  absences: number
+  sortiesAnticipees: number
+  heuresInsuffisantes: number
+  total: number
+}
+
+export function exportAnomaliesResumeExcel(data: AnomalieRapport[], filename: string): void {
+  const lignes = data.map(a => ({
+    'Nom':                 a.nom,
+    'Prénom':              a.prenom,
+    'Matricule':           a.matricule,
+    'Retards':             a.retards,
+    'Absences':            a.absences,
+    'Sorties anticipées':  a.sortiesAnticipees,
+    'Heures insuf.':       a.heuresInsuffisantes,
+    'Total':               a.total,
+  }))
+
+  const ws = XLSX.utils.json_to_sheet(lignes)
+  ws['!cols'] = [
+    { wch: 16 },
+    { wch: 16 },
+    { wch: 12 },
+    { wch: 10 },
+    { wch: 10 },
+    { wch: 18 },
+    { wch: 14 },
+    { wch: 8  },
+  ]
+
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Anomalies résumé')
+  XLSX.writeFile(wb, `${filename}.xlsx`)
+}
