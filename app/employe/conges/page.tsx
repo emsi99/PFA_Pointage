@@ -260,7 +260,7 @@ export default function PageDemandeConge() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--pp-text-secondary)' }}>
+              <label htmlFor="conge-date-debut" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--pp-text-secondary)' }}>
                 Date de début
               </label>
               <div
@@ -269,6 +269,7 @@ export default function PageDemandeConge() {
               >
                 <Calendar size={14} style={{ color: 'var(--pp-text-muted)', flexShrink: 0 }} />
                 <input
+                  id="conge-date-debut"
                   type="date"
                   value={dateDebut}
                   min={aujourdhui()}
@@ -280,7 +281,7 @@ export default function PageDemandeConge() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--pp-text-secondary)' }}>
+              <label htmlFor="conge-date-fin" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--pp-text-secondary)' }}>
                 Date de fin
               </label>
               <div
@@ -289,6 +290,7 @@ export default function PageDemandeConge() {
               >
                 <Calendar size={14} style={{ color: 'var(--pp-text-muted)', flexShrink: 0 }} />
                 <input
+                  id="conge-date-fin"
                   type="date"
                   value={dateFin}
                   min={dateDebut || aujourdhui()}

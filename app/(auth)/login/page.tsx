@@ -87,10 +87,11 @@ export default function PageLogin() {
 
             {/* Email */}
             <div>
-              <label className="block text-xs font-medium text-[#0f1729] mb-1.5">Email</label>
+              <label htmlFor="login-email" className="block text-xs font-medium text-[#0f1729] mb-1.5">Email</label>
               <div className="relative">
                 <Mail size={14} strokeWidth={2} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 <input
+                  id="login-email"
                   type="email"
                   placeholder="votre@email.com"
                   value={email}
@@ -110,10 +111,11 @@ export default function PageLogin() {
 
             {/* Mot de passe */}
             <div>
-              <label className="block text-xs font-medium text-[#0f1729] mb-1.5">Mot de passe</label>
+              <label htmlFor="login-password" className="block text-xs font-medium text-[#0f1729] mb-1.5">Mot de passe</label>
               <div className="relative">
                 <Lock size={14} strokeWidth={2} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 <input
+                  id="login-password"
                   type={voirMdp ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={password}
@@ -140,9 +142,9 @@ export default function PageLogin() {
             </div>
 
             <div className="text-right -mt-1">
-              <a href="#" className="text-xs text-[#2563eb] hover:underline underline-offset-2">
+              <button type="button" className="text-xs text-[#2563eb] hover:underline underline-offset-2 bg-transparent border-0 p-0 cursor-pointer">
                 Mot de passe oublié ?
-              </a>
+              </button>
             </div>
 
             <button

@@ -393,10 +393,10 @@ export default function PageEmployes() {
               <div className="grid grid-cols-2 gap-3">
                 {(['prenom', 'nom'] as const).map(f => (
                   <div key={f}>
-                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--pp-text-primary)' }}>
+                    <label htmlFor={f} className="block text-xs font-medium mb-1.5" style={{ color: 'var(--pp-text-primary)' }}>
                       {f === 'prenom' ? 'Prénom' : 'Nom'} *
                     </label>
-                    <input type="text" required value={formulaire[f]} onChange={champ(f)}
+                    <input id={f} type="text" required value={formulaire[f]} onChange={champ(f)}
                       className={inputCls}
                       style={{ backgroundColor: 'var(--pp-input-bg)', borderColor: 'var(--pp-card-border)', color: 'var(--pp-text-primary)' }} />
                   </div>
@@ -407,10 +407,10 @@ export default function PageEmployes() {
                 { key: 'password' as const, label: 'Mot de passe', type: 'password' },
               ].map(f => (
                 <div key={f.key}>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--pp-text-primary)' }}>
+                  <label htmlFor={f.key} className="block text-xs font-medium mb-1.5" style={{ color: 'var(--pp-text-primary)' }}>
                     {f.label} *
                   </label>
-                  <input type={f.type} required value={formulaire[f.key]} onChange={champ(f.key)}
+                  <input id={f.key} type={f.type} required value={formulaire[f.key]} onChange={champ(f.key)}
                     minLength={f.key === 'password' ? 8 : undefined}
                     className={inputCls}
                     style={{ backgroundColor: 'var(--pp-input-bg)', borderColor: 'var(--pp-card-border)', color: 'var(--pp-text-primary)' }} />
@@ -421,10 +421,10 @@ export default function PageEmployes() {
                 { key: 'role' as const, label: 'Rôle', opts: [{ v: 'employe', l: 'Employé' }, { v: 'admin', l: 'Administrateur' }] },
               ].map(f => (
                 <div key={f.key}>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--pp-text-primary)' }}>
+                  <label htmlFor={f.key} className="block text-xs font-medium mb-1.5" style={{ color: 'var(--pp-text-primary)' }}>
                     {f.label}
                   </label>
-                  <select value={formulaire[f.key]} onChange={champ(f.key)}
+                  <select id={f.key} value={formulaire[f.key]} onChange={champ(f.key)}
                     className={inputCls}
                     style={{ backgroundColor: 'var(--pp-input-bg)', borderColor: 'var(--pp-card-border)', color: 'var(--pp-text-primary)' }}>
                     {f.opts.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}

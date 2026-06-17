@@ -174,11 +174,12 @@ function ModalConfirmation({ action, conge, onConfirm, onClose, envoi }: ModalPr
 
           {/* Commentaire facultatif */}
           <div>
-            <label className="flex items-center gap-1.5 text-xs font-medium mb-2" style={{ color: 'var(--pp-text-secondary)' }}>
+            <label htmlFor="conge-commentaire" className="flex items-center gap-1.5 text-xs font-medium mb-2" style={{ color: 'var(--pp-text-secondary)' }}>
               <MessageSquare size={12} strokeWidth={2} />
               Commentaire (facultatif)
             </label>
             <textarea
+              id="conge-commentaire"
               value={commentaire}
               onChange={e => setCommentaire(e.target.value)}
               placeholder={isValide ? 'Ajouter une note…' : 'Précisez le motif du refus…'}
