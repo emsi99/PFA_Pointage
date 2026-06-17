@@ -94,8 +94,8 @@ export async function GET(req: NextRequest) {
         continue
       }
 
-      const premiereEntree = [...jour.entrees].sort()[0]
-      const derniereSortie = jour.sorties.length > 0 ? [...jour.sorties].sort().at(-1)! : null
+      const premiereEntree = [...jour.entrees].sort((a, b) => a.localeCompare(b))[0]
+      const derniereSortie = jour.sorties.length > 0 ? [...jour.sorties].sort((a, b) => a.localeCompare(b)).at(-1)! : null
       const minutesEntree  = heureEnMinutes(premiereEntree)
 
       // ── Retard ─────────────────────────────────────────────────────────────

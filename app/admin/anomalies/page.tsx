@@ -115,10 +115,11 @@ export default function PageAnomalies() {
         {/* Stat cards — clickable type filters */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {(Object.entries(CONFIG_TYPES) as [TypeAnomalie, CfgType][]).map(([key, cfg]) => (
-            <div
+            <button
+              type="button"
               key={key}
               onClick={() => setTypeFiltre(prev => prev === key ? '' : key)}
-              className="rounded-2xl border p-4 flex items-center gap-3 cursor-pointer transition-all select-none"
+              className="rounded-2xl border p-4 flex items-center gap-3 cursor-pointer transition-all select-none w-full text-left"
               style={{
                 backgroundColor: typeFiltre === key ? `${cfg.couleur}10` : 'var(--pp-card-bg)',
                 borderColor:     typeFiltre === key ? cfg.couleur         : 'var(--pp-card-border)',
@@ -143,7 +144,7 @@ export default function PageAnomalies() {
                   <p className="text-xs" style={{ color: 'var(--pp-text-muted)' }}>{cfg.label}s</p>
                 </div>
               )}
-            </div>
+            </button>
           ))}
         </div>
 

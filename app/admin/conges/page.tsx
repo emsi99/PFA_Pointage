@@ -119,6 +119,8 @@ function ModalConfirmation({ action, conge, onConfirm, onClose, envoi }: ModalPr
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
+      onKeyDown={e => { if (e.key === 'Escape') onClose() }}
+      role="presentation"
     >
       <div
         className="w-full max-w-md rounded-2xl shadow-2xl overflow-hidden"
